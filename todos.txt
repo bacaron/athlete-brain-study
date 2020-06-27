@@ -1,5 +1,3 @@
 #to dos
 1) white matter track code
-2) make group average (by lobe) cortical plots
-3) make app for subcortical parcels info
-4) add subcortical parcels to collisionVNonCollision code
+2) mlc

@@ -2,7 +2,7 @@
 
 topDir=$1
 projectID="5cb8973c71a8630036207a6a"
-datatypes="snr tractmeasures-profiles tractmeasures-cleaned parc-stats-cortex parc-stats-aparc "
+datatypes="snr tractmeasures-profiles tractmeasures-cleaned parc-stats-cortex parc-stats-aparc parc-stats-subcort"
 
 for DTYPES in ${datatypes}
 do
@@ -18,6 +18,8 @@ do
 			bl dataset query --project ${projectID} --datatype neuro/parc-stats --datatype_tag "cortex_mapping_stats" --json > data_${DTYPES}.json
 		elif [[ ${DTYPES} == 'parc-stats-aparc' ]]; then
 			bl dataset query --project ${projectID} --datatype neuro/parc-stats --datatype_tag "acpc_aligned" --json > data_${DTYPES}.json
+		elif [[ ${DTYPES} == 'parc-stats-subcort' ]]; then
+			bl dataset query --project ${projectID} --datatype neuro/parc-stats --datatype_tag "subcort_stats" --json > data_${DTYPES}.json
 		fi
 	fi
 

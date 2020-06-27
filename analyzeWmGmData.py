@@ -22,6 +22,7 @@ subjects = {}
 
 img_dir = topPath + '/img/'
 data_dir = topPath + '/data/'
+lobes_dir = topPath + '/athlete_brain_study/configs/'
 
 # loop through groups and identify subjects and set color schema for each group
 for g in range(len(groups)):
@@ -71,8 +72,9 @@ computeThicknessVolumeDiffRoi(topPath,data_dir,groups,subjects,colors)
 from computeCollisionVNonCollisionCortex import computeCollisionVNonCollisionCortex
 computeCollisionVNonCollisionCortex(topPath,data_dir,groups,subjects,colors)
 
-
-## DTI/NODDI scatter plots (group averages)
+## lobe averages
+from computeLobeMicrostructure import computeLobeMicrostructure
+computeLobeMicrostructure(topPath,lobes_dir,data_dir,groups,subjects,colors)
 
 
 
