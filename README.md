@@ -13,6 +13,7 @@ This is the code repository for the paper entitled _Human white matter microstru
 ### Project Directory Organization
 
 For a better understanding of how this code was run locally, here is the local directory structure:
+
 	.
 	├── analyzeWmGmData.py
 	├── bl_download.sh
