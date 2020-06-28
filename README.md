@@ -6,6 +6,19 @@ This is the code repository for the paper entitled _Human white matter microstru
 
 #![fig2](./reports/figures/fig2.png)
 -->
+
+### Authors 
+
+- Brad Caron (bacaron@iu.edu)
+- Daniel Bullock
+- Lindsey Kitchell
+- Brent McPherson
+- Derek Kellar
+- Hu Cheng
+- Sharlene Newman
+- Nicholas Port
+- Franco Pestilli
+
 ### Data availability
 
 #Data used in this project can be found at the accompanying [brainlife.io project](LINKTOPROJ).
@@ -45,3 +58,22 @@ For a better understanding of how this code was run locally, here is the local d
 <!--
 <sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>
 -->
+
+### Dependencies
+
+This repository requires the following libraries when run locally. 
+
+- npm: https://www.npmjs.com/get-npm
+- brainlife CLI: https://brainlife.io/docs/cli/install/
+- jsonlab: https://github.com/fangq/jsonlab.git
+- python3: https://www.python.org/downloads/
+- pandas: https://pandas.pydata.org/
+- seaborn: https://seaborn.pydata.org/installing.html
+- matplotlib: https://matplotlib.org/faq/installing_faq.html
+- scipy: https://www.scipy.org/install.html
+- scikit-learn: https://scikit-learn.org/stable/install.html
+
+### To run locally
+
+To run locally, you'll first need to download the appropriate data using the bl_download.sh shell script. Once the data is downloaded, you can run via python3 the analyzeWmGmData.py script to generate the summary data structures and figures. To run the machine learning analyses, 
+
