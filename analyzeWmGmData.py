@@ -17,21 +17,15 @@ img_dir = topPath+'/img/'
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
 sys.path.insert(0,scripts_dir)
-sys.path.insert(1,topPath+'/athlete_brain_study/utils')
-sys.path.insert(2,topPath+'/athlete_brain_study/gray-matter-parcels')
-sys.path.insert(2,topPath+'/athlete_brain_study/white-matter-tracks')
 
 groups = ['football','cross_country','non_athlete']
 colors_array = ['orange','pink','blue']
 diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
 lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
+lobes_dir = topPath + '/athlete_brain_study/configs/'
 
 colors = {}
 subjects = {}
-
-img_dir = topPath + '/img/'
-data_dir = topPath + '/data/'
-lobes_dir = topPath + '/athlete_brain_study/configs/'
 
 # loop through groups and identify subjects and set color schema for each group
 for g in range(len(groups)):
