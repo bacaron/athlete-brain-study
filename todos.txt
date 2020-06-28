@@ -1,3 +1,2 @@
 #to dos
-1) white matter track code
-2) mlc
+1) mlc
