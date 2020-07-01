@@ -108,29 +108,32 @@ print("labels generated")
 
 ### identify best parameters for each tissue type
 print("Identifying best mlc parameters")
-if not os.path.exists(mlc_data_dir+'best_params_struct.json'):
+if not os.path.exists(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'):
 	from mlc_scripts import gridsearch_algs
-	best_parameters = {}
-	for tt in tissues:
-		print(tt)
-		if tt != 'wholebrain':
-			best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[0]],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
-		else:
-			best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[6]],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
+	for ml in range(len(measures_loop[0:3])):
+		best_parameters = {}
+		for tt in tissues:
+			print(tt)
+			if tt != 'wholebrain':
+				best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[ml]],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
+			else:
+				if ml <= 0:
+					best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[6]],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
 
-	# write out best parameters for easier loading
-	with open(mlc_data_dir+'best_params_struct.json',"w") as best_params_f:
-		json.dump(best_parameters,best_params_f)
-else:
-	# load saved parameters
-	with open(mlc_data_dir+'best_params_struct.json',"r") as best_params_f:
-		best_parameters = json.load(best_params_f)
+		# write out best parameters for easier loading
+		with open(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json',"w") as best_params_f:
+			json.dump(best_parameters,best_params_f)
 print("best mlc parameters identified")
 
 ### running mlc analyses - diffusion
 from mlc_scripts import runModel
 for ml in range(len(measures_loop[0:3])):
 	print("running mlc analyses: %s" %measures_loop[ml])
+	
+	# load saved parameters
+	with open(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json',"r") as best_params_f:
+		best_parameters = json.load(best_params_f)
+	
 	for tt in tissues[0:3]:
 		print(tt)
 		tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
