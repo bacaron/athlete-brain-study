@@ -53,7 +53,7 @@ def findBestParameters(mlc_dictionary,mlc_name,df_data,labels,textfile_name,outp
 
     return output_parameters
 
-def gridsearch_algs(node_type,df_nodes,df_subjects,measures,labels,mlc_dictionary,text_dir,data_dir):
+def gridsearch_algs(node_type,df_nodes,df_subjects,measures,measures_name,labels,mlc_dictionary,text_dir,data_dir):
     # -*- coding: utf-8 -*-
     """
     Created on Tue Sep 12 22:11:38 2017
@@ -96,7 +96,7 @@ def gridsearch_algs(node_type,df_nodes,df_subjects,measures,labels,mlc_dictionar
     data = scaler.transform(data)
     
     ## open textfile titled 'gridsearchresults.txt'
-    txtfile = open(text_dir+'/'+node_type+'_gridsearchresults.txt',"w")
+    txtfile = open(text_dir+'/'+node_type+'_'+measures_name+'_gridsearchresults.txt',"w")
     txtfile.close()
     
     ## loop through mlcs
@@ -104,7 +104,7 @@ def gridsearch_algs(node_type,df_nodes,df_subjects,measures,labels,mlc_dictionar
         output_parameters = findBestParameters(mlc_dictionary,m,data,labels,txtfile.name,output_parameters)
 
     # output parameter and score dictionaries
-    with open(data_dir+'/'+node_type+'_parameters.json',"w") as param_f:
+    with open(data_dir+'/'+node_type+'_'+measures_name+'_parameters.json',"w") as param_f:
         json.dump(output_parameters,param_f)
 
     return output_parameters
