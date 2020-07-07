@@ -151,6 +151,40 @@ def combineTrackMacroMicro(dataPath,macroData,microData):
 
 	return [data,data_mean]
 
+### functional track/lobedata
+def compileFunctionalData(dataPath,structureData,functionalLabels,labelsPath):
+
+	# set important and dumby variables
+	parcels = {}
+	parcel_id = {}
+	functional_data = pd.DataFrame([])
+
+	# loop through functional domains and append data to dataframe
+	for fl in range(len(functionalLabels)):
+		print(functionalLabels[fl])
+		if functionalLabels[fl] in ['association','projection','commissural']:
+			tissue = 'tracks'
+		else:
+			tissue = 'lobes'
+
+		parcels[functionalLabels[fl]] = pd.read_csv((labelsPath+'/'+functionalLabels[fl]+'_'+tissue+'.txt'),header=None)[0].tolist()
+		parcel_id[functionalLabels[fl]] = range(len(parcels[functionalLabels[fl]]))
+		tmpdata = structureData[structureData['structureID'].isin(parcels[functionalLabels[fl]])]
+		tmpnodes = list(parcel_id[functionalLabels[fl]])
+		for s in structureData['subjectID'].unique().tolist():
+			tmpdata['nodeID'].loc[tmpdata['subjectID'] == s] = [ x+1 for x in tmpnodes ]
+		
+		tmpdata['functionalID'] = [functionalLabels[fl] for f in range(len(tmpdata['structureID']))]
+		functional_data = functional_data.append(tmpdata)
+
+	# output track names
+	if not os.path.exists(dataPath):
+		os.mkdir(dataPath)
+
+	functional_data.to_csv(dataPath+'functional_'+tissue+'_nodes.csv',index=False)
+
+	return functional_data
+
 ### gray matter
 def collectCorticalParcelData(topPath,dataPath,groups,subjects):
 	
@@ -229,35 +263,35 @@ def combineCorticalSubcortical(dataPath,corticalData,subcorticalData):
 
 	return [graymatter_names,data]
 
-def compileLobeData(dataPath,corticalData,lobes,labelsPath):
+# def compileLobeData(dataPath,corticalData,lobes,labelsPath):
 
-	# set important and dumby variables
-	parcels = {}
-	parcel_lobe_id = {}
-	lobe_data = pd.DataFrame([])
+# 	# set important and dumby variables
+# 	parcels = {}
+# 	parcel_lobe_id = {}
+# 	lobe_data = pd.DataFrame([])
 
-	# loop through lobes and append data to lobes_data dataframe
-	for l in range(len(lobes)):
-		print(lobes[l])
-		parcels[lobes[l]] = pd.read_csv((labelsPath+'/'+lobes[l]+'_lobes.txt'),header=None)[0].tolist()
-		parcel_lobe_id[lobes[l]] = range(len(parcels[lobes[l]]))
-		tmpdata = corticalData[corticalData['structureID'].isin(parcels[lobes[l]])]
-		tmpnodes = list(parcel_lobe_id[lobes[l]])
-		for s in corticalData['subjectID'].unique().tolist():
-			tmpdata['nodeID'].loc[tmpdata['subjectID'] == s] = [ x+1 for x in tmpnodes ]
+# 	# loop through lobes and append data to lobes_data dataframe
+# 	for l in range(len(lobes)):
+# 		print(lobes[l])
+# 		parcels[lobes[l]] = pd.read_csv((labelsPath+'/'+lobes[l]+'_lobes.txt'),header=None)[0].tolist()
+# 		parcel_lobe_id[lobes[l]] = range(len(parcels[lobes[l]]))
+# 		tmpdata = corticalData[corticalData['structureID'].isin(parcels[lobes[l]])]
+# 		tmpnodes = list(parcel_lobe_id[lobes[l]])
+# 		for s in corticalData['subjectID'].unique().tolist():
+# 			tmpdata['nodeID'].loc[tmpdata['subjectID'] == s] = [ x+1 for x in tmpnodes ]
 		
-		tmpdata['structureID'] = [lobes[l] for f in range(len(tmpdata['structureID']))]
-		lobe_data = lobe_data.append(tmpdata)
+# 		tmpdata['structureID'] = [lobes[l] for f in range(len(tmpdata['structureID']))]
+# 		lobe_data = lobe_data.append(tmpdata)
 
-	lobe_data_mean = lobe_data.groupby(['subjectID','structureID']).mean().reset_index()
-	lobe_data_mean['nodeID'] = [ 1 for f in range(len(lobe_data_mean['nodeID'])) ]
+# 	lobe_data_mean = lobe_data.groupby(['subjectID','structureID']).mean().reset_index()
+# 	lobe_data_mean['nodeID'] = [ 1 for f in range(len(lobe_data_mean['nodeID'])) ]
 
-	# output track names
-	if not os.path.exists(dataPath):
-		os.mkdir(dataPath)
+# 	# output track names
+# 	if not os.path.exists(dataPath):
+# 		os.mkdir(dataPath)
 
-	lobe_data.to_csv(dataPath+'lobes_nodes.csv',index=False)
-	lobe_data_mean.to_csv(dataPath+'lobes_mean_nodes.csv')
+# 	lobe_data.to_csv(dataPath+'lobes_nodes.csv',index=False)
+# 	lobe_data_mean.to_csv(dataPath+'lobes_mean_nodes.csv')
 
 	return [lobe_data,lobe_data_mean]
 

@@ -1,5 +1,2 @@
 #to dos
-1) figure out ass,proj,call tracks from dan's seg
-2) code up functional  expertise
-3) code up other measures (whole brain, thickness/volume, volume/length/count, etc)
-4) make plot code
+1) make plot code

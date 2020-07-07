@@ -47,11 +47,17 @@ if not os.path.exists(results_individ_dir):
 sys.path.insert(0,scripts_dir)
 
 # tissue types
-tissues = ['track_mean','cortex','subcortex','lobes','wholebrain']
+tissues = ['functional_tracks','functional_lobes','subcortex','wholebrain']
+tissue_names = ['track_mean','cortex','subcortex','wholebrain']
+
+# functional labels
+functional_labels = {}
+functional_labels['track_mean'] = ['association','projection','commissural']
+functional_labels['cortex'] = ['frontal','temporal','parietal','occipital','insular','limbic','motor','somatosensory']
 
 # measures
 measures = {}
-measures_loop = ['all_diffusion','dti','noddi','track','cortex','subcortex','wholebrain']
+measures_loop = ['all_diffusion','dti','noddi','track_mean_nondiffusion','cortex_nondiffusion','subcortex_nondiffusion','wholebrain_nondiffusion']
 measures[measures_loop[0]] = ['ad','fa','md','rd','ndi','isovf','odi']
 measures[measures_loop[1]] = measures[measures_loop[0]][0:4]
 measures[measures_loop[2]] = measures[measures_loop[0]][4::]
@@ -89,13 +95,13 @@ mlc_dict[mlcs[5]] = {'model': LogisticRegression(),'name': mlcs[5],'parameters':
 print("loading data")
 df_subjects = pd.read_csv(data_dir+'subjects.csv')
 df = {}
-for tt in tissues:
-	df[tt] = pd.read_csv(data_dir+tt+'_nodes.csv')
-	if tt != 'wholebrain':
-		nan_structs = list(df[tt][df[tt][measures[measures_loop[0]][0]].isnull()]['structureID'])
+for tt in range(len(tissue_names)):
+	df[tissue_names[tt]] = pd.read_csv(data_dir+tissues[tt]+'_nodes.csv')
+	if tissue_names[tt] != 'wholebrain':
+		nan_structs = list(df[tissue_names[tt]][df[tissue_names[tt]][measures[measures_loop[0]][0]].isnull()]['structureID'])
 		if nan_structs:
-			print("missing structs: \n"+str(df[tt][df[tt][measures[measures_loop[0]][0]].isnull()]),file=open(mlc_dir+tt+'_missing_structs.txt',"w"))
-			df[tt] = df[tt][~df[tt]['structureID'].isin(nan_structs)]
+			print("missing structs: \n"+str(df[tissue_names[tt]][df[tissue_names[tt]][measures[measures_loop[0]][0]].isnull()]),file=open(mlc_dir+tissue_names[tt]+'_missing_structs.txt',"w"))
+			df[tissue_names[tt]] = df[tissue_names[tt]][~df[tissue_names[tt]]['structureID'].isin(nan_structs)]
 print("data loaded")
 
 ### set up labels to use
@@ -105,58 +111,88 @@ model_labels[models[1]] = [ 1 if int(f.split('_')[0]) <= 2 else 2 for f in df_su
 model_labels[models[2]] = [ 1 if int(f.split('_')[0]) in [1,3] else 2 for f in df_subjects['subjectID']] # SES
 model_labels[models[3]] = [ 1 if int(f.split('_')[0]) < 2 else 2 for f in df_subjects['subjectID']] # RHI
 print("labels generated")
-
+	
 ### identify best parameters for each tissue type
 print("Identifying best mlc parameters")
-if not os.path.exists(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'):
-	from mlc_scripts import gridsearch_algs
-	for ml in range(len(measures_loop[0:3])):
+from mlc_scripts import gridsearch_algs
+# diffusion based measures
+for ml in range(len(measures_loop)):
+	if not os.path.exists(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'):
 		best_parameters = {}
-		for tt in tissues:
-			print(tt)
-			if tt != 'wholebrain':
+		if ml < 3:
+			for tt in tissue_names[0:3]:
+				print(tt)
 				best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[ml]],measures_loop[ml],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
-			else:
-				if ml <= 0:
-					best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[6]],measures_loop[6],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
+		else:
+			best_parameters[measures_loop[ml]] = gridsearch_algs(measures_loop[ml],df[tissue_names[ml-3]],df_subjects,measures[measures_loop[ml]],measures_loop[ml],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
 
 		# write out best parameters for easier loading
-		with open(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json',"w") as best_params_f:
+		out_name = mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'
+
+		with open(out_name,"w") as best_params_f:
 			json.dump(best_parameters,best_params_f)
 print("best mlc parameters identified")
 
-### running mlc analyses - diffusion
+### running mlc analyses
 from mlc_scripts import runModel
-for ml in range(len(measures_loop[0:3])):
+for ml in range(len(measures_loop)):
 	print("running mlc analyses: %s" %measures_loop[ml])
 	
 	# load saved parameters
 	with open(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json',"r") as best_params_f:
 		best_parameters = json.load(best_params_f)
 	
-	for tt in tissues[0:3]:
-		print(tt)
-		tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
-		for mc in range(len(mlcs)):
-			print(mlcs[mc])
-			model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[tt][mlcs[mc]]['parameters'])
-			for mm in range(len(models)):
-				print(models[mm])
-				out_name = 'results_'+tt+'_'+models[mm]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]+'.csv'
-				print("results will be saved to "+results_dir+out_name)
-				if tt != 'wholebrain':
-					tissue_type_output = runModel(df[tt],df_subjects,model,mlcs[mc],model_labels[models[mm]],models[mm],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
-		
-		# output tissue type results
-		tissue_type_output.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
+	# diffusion measures
+	if ml < 3:
+		# individual structures
+		print("individual structures")
+		for tt in tissue_names[0:3]:
+			if not os.path.exists(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv'):
+				print(tt)
+				tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
+				for mc in range(len(mlcs)):
+					print(mlcs[mc])
+					model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[tt][mlcs[mc]]['parameters'])
+					for mm in range(len(models)):
+						print(models[mm])
+						out_name = 'results_'+tt+'_'+models[mm]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]+'.csv'
+						if tt != 'wholebrain':
+							tissue_type_output = runModel(df[tt],df_subjects,model,mlcs[mc],model_labels[models[mm]],models[mm],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
+				
+				# output tissue type results
+				tissue_type_output.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
 
+		# functional domain groupings
+		print("functional domain groupings")
+		for tt in tissue_names[0:2]:
+			if not os.path.exists(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv'):
+				print(tt)
+				tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
+				for fl in functional_labels[tt]:
+					print(fl)
+					for mc in range(len(mlcs)):
+						print(mlcs[mc])
+						model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[tt][mlcs[mc]]['parameters'])
+						out_name = 'results_'+tt+'_functional_'+fl+'_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
+						tissue_type_output = runModel(df[tt][df[tt]['functionalID'] == fl],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
+					
+				# output tissue type results
+				tissue_type_output.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
 
+	# non diffusion measures
+	else:
+		if not os.path.exists(results_dir+'results_'+measures_loop[ml]+'.csv'):
+			print("non-diffusion analyses: %s" %tissue_names[ml-3])
+			tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
+			for mc in range(len(mlcs)):
+				print(mlcs[mc])
+				model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[measures_loop[ml]][mlcs[mc]]['parameters'])
+				out_name = 'results_'+'_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
+				tissue_type_output = runModel(df[tissue_names[ml-3]],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
+				
+			# output tissue type results
+			tissue_type_output.to_csv(results_dir+'results_'+measures_loop[ml]+'.csv',index=False)
 
-
-
-# ### whole brain measures mlc
-# 			else:
-# 				tissue_type_output = runModel(df[tt],df_subjects,model,mlcs[mc],model_labels[models[mm]],models[mm],wholebrain_measures,2,results_individ_dir,out_name,tissue_type_output)
 
 
 print("machine learning complete!")

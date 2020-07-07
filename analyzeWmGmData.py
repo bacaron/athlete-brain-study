@@ -12,17 +12,20 @@ print("setting up variables")
 topPath = "/media/brad/APPS/athlete-updated-pipeline-qc"
 os.chdir(topPath)
 scripts_dir = topPath+'/athlete_brain_study/'
+utils_dir = scripts_dir+'/utils/'
 data_dir = topPath+'/data/'
 img_dir = topPath+'/img/'
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
 sys.path.insert(0,scripts_dir)
+sys.path.insert(1,utils_dir)
 
 groups = ['football','cross_country','non_athlete']
 colors_array = ['orange','pink','blue']
 diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
+functional_tracks = ['association','projection','commissural']
 lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
-lobes_dir = topPath + '/athlete_brain_study/configs/'
+configs_dir = topPath + '/athlete_brain_study/configs/'
 
 colors = {}
 subjects = {}
@@ -82,6 +85,10 @@ track_micro =  collectTrackMicroData(topPath,data_dir,groups,subjects,180)
 from compile_data import combineTrackMacroMicro
 [track_data,track_mean_data] = combineTrackMacroMicro(data_dir,track_macro[track_macro['structureID'] != 'wbfg'],track_micro)
 
+# functional-specific track measures
+from compile_data import compileFunctionalData
+functional_track_data = compileFunctionalData(data_dir,track_mean_data,functional_tracks,labelsPath=configs_dir)
+
 ## length, volume, streamline count of tracks
 from plot_track_data import plotTrackMacroData
 for dc in ['volume','length','count']:
@@ -117,8 +124,8 @@ from compile_data import combineCorticalSubcortical
 [graymatter_names,graymatter] = combineCorticalSubcortical(data_dir,cortical,subcortical)
 
 # lobe-specific measures
-from compile_data import compileLobeData
-[lobe_data,lobe_data_mean] = compileLobeData(data_dir,cortical,lobes,labelsPath=scripts_dir+'/configs/')
+from compile_data import compileFunctionalData
+functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=configs_dir)
 
 ## volume, cortical thickness analyses
 # cortical thickness/volume by diffusion measure per cortical parcel
