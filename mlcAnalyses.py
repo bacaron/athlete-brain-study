@@ -156,8 +156,7 @@ for ml in range(len(measures_loop)):
 					for mm in range(len(models)):
 						print(models[mm])
 						out_name = 'results_'+tt+'_'+models[mm]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]+'.csv'
-						if tt != 'wholebrain':
-							tissue_type_output = runModel(df[tt],df_subjects,model,mlcs[mc],model_labels[models[mm]],models[mm],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
+						tissue_type_output = runModel(df[tt],df_subjects,model,mlcs[mc],model_labels[models[mm]],models[mm],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
 				
 				# output tissue type results
 				tissue_type_output.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
@@ -165,19 +164,19 @@ for ml in range(len(measures_loop)):
 		# functional domain groupings
 		print("functional domain groupings")
 		for tt in tissue_names[0:2]:
-			if not os.path.exists(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv'):
-				print(tt)
-				tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
-				for fl in functional_labels[tt]:
+			for fl in functional_labels[tt]:
+				if not os.path.exists(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv'):
+					print(tt)
 					print(fl)
+					tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
 					for mc in range(len(mlcs)):
 						print(mlcs[mc])
 						model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[tt][mlcs[mc]]['parameters'])
 						out_name = 'results_'+tt+'_functional_'+fl+'_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
 						tissue_type_output = runModel(df[tt][df[tt]['functionalID'] == fl],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
-					
-				# output tissue type results
-				tissue_type_output.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
+				
+					# output tissue type results
+					tissue_type_output.to_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv',index=False)
 
 	# non diffusion measures
 	else:
