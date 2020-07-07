@@ -186,13 +186,27 @@ for ml in range(len(measures_loop)):
 			for mc in range(len(mlcs)):
 				print(mlcs[mc])
 				model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[measures_loop[ml]][mlcs[mc]]['parameters'])
-				out_name = 'results_'+'_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
+				out_name = 'results_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
 				tissue_type_output = runModel(df[tissue_names[ml-3]],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
 				
 			# output tissue type results
 			tissue_type_output.to_csv(results_dir+'results_'+measures_loop[ml]+'.csv',index=False)
+print("machine learning complete.")
 
+### generate plots of mlc results
+# model 4 noddi and dti results
+from plot_mlc_data import
 
+# all models noddi and dti results
+from plot_mlc_data import
 
-print("machine learning complete!")
+# rac, bic, accuracy plots for noddi and dti
+from plot_mlc_data import
+
+# functional expertise noddi and dti
+from plot_mlc_data import
+
+# non diffusion measures
+from plot_mlc_data import
+
 
