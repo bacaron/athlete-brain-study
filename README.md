@@ -77,7 +77,7 @@ This repository requires the following libraries when run locally.
 
 ### Docker container
 
-A docker container exists containing all of the dependencies necessary for running the analyses in this paper (https://hub.docker.com/r/bacaron/athlete-brain-container). This container can be downloaded via singularity. 
+A docker container exists containing all of the dependencies necessary for running the analyses in this paper (https://hub.docker.com/r/bacaron/athlete-brain-container). This container can be executed or downloaded via singularity. See the "main" script for examples of how to execute the analyses via singularity.
 
 ### To run locally
 
