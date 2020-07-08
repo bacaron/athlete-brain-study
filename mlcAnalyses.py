@@ -24,7 +24,7 @@ print("setting up variables")
 topPath = "/media/brad/APPS/athlete-updated-pipeline-qc"
 os.chdir(topPath)
 data_dir = topPath+'/data/'
-scripts_dir = topPath+'/athlete_brain_study/machine-learning/'
+scripts_dir = topPath+'/athlete_brain_study/utils/'
 mlc_dir = topPath+'/mlc/'
 mlc_data_dir = mlc_dir+'/data/'
 text_dir = mlc_dir+'gridsearch_results'

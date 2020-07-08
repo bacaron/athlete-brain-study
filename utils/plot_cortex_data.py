@@ -218,7 +218,3 @@ def plotLobeMicrostructureAverage(groups,colors,lobes,stat,diffusion_measures,di
 			plt.savefig(os.path.join(dir_out, img_out_png))       
 		else:
 			plt.show()
-
-
-# if __name__ == '__main__':
-# 	plotAparcWholeBrainData(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])

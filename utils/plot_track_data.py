@@ -259,6 +259,3 @@ def plotTrackMicrostructureProfiles(groups,colors,tracks,stat,diffusion_measures
 				plt.show()
 
 			plt.close(fig)
-
-# if __name__ == '__main__':
-# 	plotTractMacro(sys.argv[0],sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])

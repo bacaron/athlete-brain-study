@@ -290,5 +290,3 @@ def collectWholeBrainStats(topPath,dataPath,groups,subjects):
 	data.to_csv(dataPath+'wholebrain_nodes.csv',index=False)
 
 	return data
-
- 
