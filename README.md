@@ -1,6 +1,6 @@
 # Human white matter microstructure predicts elite sports participation
 
-This is the code repository for the paper entitled _Human white matter microstructure predicts elite sports participation_ (link). This repository contains the code responsible for all figures and analyses generated in the paper. Specifically, this repository contains code for downloading the relevant data from brainlife.io, collating the data into relevant .csv files, analyzing the data, performing machine learning, and producing figure plots. The code here was written exclusively in python3.x.
+This is the code repository for the paper entitled _Human white matter microstructure predicts elite sports participation_ (link). This repository contains the code responsible for all figures and analyses generated in the paper. Specifically, this repository contains code for downloading the relevant data from brainlife.io, collating the data into relevant .csv files, analyzing the data, performing machine learning, and producing figure plots. The code here was written exclusively in python3.6.
 <!--
 #![fig1](./reports/figures/fig1.png)
 
