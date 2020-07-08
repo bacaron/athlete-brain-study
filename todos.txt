@@ -1,2 +1,2 @@
 #to dos
-1) make plot code
+1) make anova code

@@ -177,54 +177,128 @@ def runModel(df_nodes,df_subjects,mlc,mlc_name,model_labels,model_name,measures,
 
     return output
 
-# def tissueTypeSubsetAnalyses(node_type,):
-#     import sys
-#     import numpy as np
-#     import pandas as pd
-#     from Model_LOO_subset import Model_LOO_subset
-#     from scipy.io import savemat
+### calculate rac and bic
+def computeRacBic(data,models,mlcs,len_subjects):
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from statsmodels.tools.eval_measures import bic
 
-#         ## read in tract profile data (nodes.csv) and subject identification data (subjects.csv) and merge into single structure
-#     df_nodes = pd.read_csv('nodes.csv')
-#     df_subjects = pd.read_csv('subjects.csv')
-#     df = pd.merge(df_nodes,df_subjects,on="subjectID")
+    # set up dummy variables
+    rac = []
+    BIC = []
 
-#     ## Associative tracts
-#         ## list of associative tract names
-#     df_tract = df[(df['tractID'] == "Left pArc") | (df['tractID'] == "Right pArc") | (df['tractID'] == "Left VOF") | (df['tractID'] == "Right VOF") | (df['tractID'] == "Left IFOF") | (df['tractID'] == "Right IFOF") | (df['tractID'] == "Left ILF") | (df['tractID'] == "Right ILF") | (df['tractID'] == "Left Uncinate") | (df['tractID'] == "Right Uncinate") | (df['tractID'] == "Left anterior thalamic") | (df['tractID'] == "Right anterior thalamic") | (df['tractID'] == "Left inferior thalamic") | (df['tractID'] == "Right inferior thalamic") | (df['tractID'] == "Left superior thalamic") | (df['tractID'] == "Right superior thalamic")]
-    
-#         ## grab tract profile data from associative tracts
-#         df_measure = df_tract[['icvf','od','isovf']].values.reshape((df_subjects.shape[0],-1))
+    # setup output summary dataframe
+    outputData = pd.DataFrame([])
 
-#         ## run classification analysis across iterations on associative tracts
-#     [model,results,df_measure,y,perc] = Model_LOO_subset(df_measure,"Associative",model,model_name,iters)
-    
-#         ## save results from associative tracts
-#         savemat('results_%s_associative' %model_name,mdict={'tot_perc': perc})
+    # calculate rac and append to input data structure
+    for perc in range(len(data['percentages'])):
+        if data['model'][perc] == models[0]:
+            chance = 1/3
+        else:
+            chance = 1/2
+        rac.append((data['percentages'][perc] - chance) / (1 - chance))
+    data['rac'] = rac
 
-#     ## Projection tracts
-#         ## list of projection tract names
-#     df_tract = df[(df['tractID'] == "Left cortico-spinal") | (df['tractID'] == "Right cortico-spinal") | (df['tractID'] == "Left IpsiFrontoPontine") | (df['tractID'] == "Right IpsiFrontoPontine") | (df['tractID'] == "Left IpsiCorticoPontine") | (df['tractID'] == "Right IpsiCorticoPontine") | (df['tractID'] == "Left Thal2ceb") | (df['tractID'] == "Right Thal2ceb") | (df['tractID'] == "Left Thalamico-spinal") | (df['tractID'] == "Right Thalamico-spinal")]
-    
-#         ## grab tract profile data from projection tracts
-#         df_measure = df_tract[['icvf','od','isovf']].values.reshape((df_subjects.shape[0],-1))
-        
-#         ## run classification analysis across iterations on projection tracts
-#     [model,results,df_measure,y,perc] = Model_LOO_subset(df_measure,"Projection",model,model_name,iters)
-    
-#         ## save results from projection tracts
-#         savemat('results_%s_projection' %model_name,mdict={'tot_perc': perc})
+    # append data to output summary dataframe
+    for model in models:
+            tmpData = pd.DataFrame([])
+            tmpData['mlc'] = mlcs
+            tmpData['model'] = [ model for f in range(len(tmpData['mlc'])) ]
+            tmpData['medianRac'] = list(data[data['model']==model].groupby('mlc',sort=False).median()['rac'])
+            tmpData['meanAcc'] = list(data[data['model']==model].groupby('mlc',sort=False).mean()['percentages'])
+            tmpData['logLikelihoodRac'] = list(np.log10(data[data['model']==model].groupby('mlc',sort=False).mean()['rac']))
+            outputData = pd.concat([outputData,tmpData],sort=False,ignore_index=True)  
 
-#     ## Callosal tracts
-#         ## list of callosal tract names
-#     df_tract = df[(df['tractID'] == "Corpus Callosum") | (df['tractID'] == "Forceps Major") | (df['tractID'] == "Forceps Minor")]
-    
-#         ## grab tract profile data from callosal tracts
-#         df_measure = df_tract[['icvf','od','isovf']].values.reshape((df_subjects.shape[0],-1))
-    
-#         ## run classification analysis across iterations on callosal tracts
-#         [model,results,df_measure,y,perc] = Model_LOO_subset(df_measure,"Callosal",model,model_name,iters)
-    
-#         ## save results from callosal tracts
-#         savemat('results_%s_callosal' %model_name,mdict={'tot_perc': perc})
+    # compute bic and append to output summary dataframe
+    for mlc in range(len(outputData['logLikelihoodRac'])):
+        if outputData['mlc'][mlc] in [mlcs[0],mlcs[5]]:
+            numParams = 4
+        elif outputData['mlc'][mlc] == mlcs[1]:
+            numParams = 1
+        else:
+            numParams = 5
 
+        BIC.append(bic(outputData['logLikelihoodRac'][mlc],len_subjects,numParams))
+
+    outputData['bic'] = BIC
+
+    return [data,outputData]
+
+### plot data
+def plotModelPerformance(x_measure,y_measure,data,dir_out,out_name):
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import numpy as np
+
+        # set up output names
+        img_out=out_name+'.eps'
+        img_out_png=out_name+'.png'
+
+        # generate figures
+        fig = plt.figure(figsize=(15,15))
+        fig.patch.set_visible(False)
+        p = plt.subplot()
+
+        # set spines and ticks
+        p.spines['right'].set_visible(False)
+        p.spines['top'].set_visible(False)
+        p.yaxis.set_ticks_position('left')
+        p.xaxis.set_ticks_position('bottom')
+
+        # plot data
+        ax = sns.violinplot(x=x_measure,y=y_measure,data=data)
+
+        ax.set(ylim=(0,1.2))
+        ax.set(yticks=np.arange(0,1.1,step=0.1))
+
+        # save or show plot
+        if dir_out:
+            if not os.path.exists(dir_out):
+                os.mkdir(dir_out)
+
+            plt.savefig(os.path.join(dir_out, img_out))
+            plt.savefig(os.path.join(dir_out, img_out_png))       
+        else:
+            plt.show()
+
+def plotMlcModelPerformance(x_measure,y_measure,data,kind,dir_out,out_name):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np
+
+    # set up output names
+    img_out=out_name+'.eps'
+    img_out_png=out_name+'.png'
+
+    # generate figures
+    fig = plt.figure(figsize=(15,15))
+    fig.patch.set_visible(False)
+    p = plt.subplot()
+
+    # set spines and ticks
+    p.spines['right'].set_visible(False)
+    p.spines['top'].set_visible(False)
+    p.yaxis.set_ticks_position('left')
+    p.xaxis.set_ticks_position('bottom')
+
+    # plot data
+    ax = sns.catplot(x=x_measure,y=y_measure,col="model",data=data,kind=kind)
+
+    if kind == 'bar':
+        ax.set(ylim=(0,28))
+        ax.set(yticks=np.arange(0,30,step=2))
+    else:
+        ax.set(ylim=(0,1.2))
+        ax.set(yticks=np.arange(0,1.1,step=0.1))
+
+ 
+    # save or show plot
+    if dir_out:
+        if not os.path.exists(dir_out):
+            os.mkdir(dir_out)
+
+        plt.savefig(os.path.join(dir_out, img_out))
+        plt.savefig(os.path.join(dir_out, img_out_png))       
+    else:
+        plt.show()

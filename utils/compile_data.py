@@ -263,38 +263,6 @@ def combineCorticalSubcortical(dataPath,corticalData,subcorticalData):
 
 	return [graymatter_names,data]
 
-# def compileLobeData(dataPath,corticalData,lobes,labelsPath):
-
-# 	# set important and dumby variables
-# 	parcels = {}
-# 	parcel_lobe_id = {}
-# 	lobe_data = pd.DataFrame([])
-
-# 	# loop through lobes and append data to lobes_data dataframe
-# 	for l in range(len(lobes)):
-# 		print(lobes[l])
-# 		parcels[lobes[l]] = pd.read_csv((labelsPath+'/'+lobes[l]+'_lobes.txt'),header=None)[0].tolist()
-# 		parcel_lobe_id[lobes[l]] = range(len(parcels[lobes[l]]))
-# 		tmpdata = corticalData[corticalData['structureID'].isin(parcels[lobes[l]])]
-# 		tmpnodes = list(parcel_lobe_id[lobes[l]])
-# 		for s in corticalData['subjectID'].unique().tolist():
-# 			tmpdata['nodeID'].loc[tmpdata['subjectID'] == s] = [ x+1 for x in tmpnodes ]
-		
-# 		tmpdata['structureID'] = [lobes[l] for f in range(len(tmpdata['structureID']))]
-# 		lobe_data = lobe_data.append(tmpdata)
-
-# 	lobe_data_mean = lobe_data.groupby(['subjectID','structureID']).mean().reset_index()
-# 	lobe_data_mean['nodeID'] = [ 1 for f in range(len(lobe_data_mean['nodeID'])) ]
-
-# 	# output track names
-# 	if not os.path.exists(dataPath):
-# 		os.mkdir(dataPath)
-
-# 	lobe_data.to_csv(dataPath+'lobes_nodes.csv',index=False)
-# 	lobe_data_mean.to_csv(dataPath+'lobes_mean_nodes.csv')
-
-	return [lobe_data,lobe_data_mean]
-
 ### whole brain
 def collectWholeBrainStats(topPath,dataPath,groups,subjects):
 

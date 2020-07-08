@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# download data
+. bl_download.sh ./
+
+# analyze group data
+time singularity exec -e docker://bacaron/athlete-brain-container:v1.0 ./analyzeWmGmData.py
+
+# run machine learning analyses
+time singularity exec -e docker://bacaron/athlete-brain-container:v1.0 ./mlcAnalyses.py

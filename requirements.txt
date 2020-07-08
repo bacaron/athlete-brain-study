@@ -1,0 +1,9 @@
+python3.6
+numpy
+pandas
+json
+matplotlib
+sklearn
+seaborn
+statsmodels
+scipy

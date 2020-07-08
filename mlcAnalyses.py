@@ -68,7 +68,7 @@ measures[measures_loop[6]] = ['Total Brain Volume','Total Cortical Gray Matter V
 
 # comparison models
 model_labels = {}
-models = ['indvidual','athlete_v_nonathlete','ses','RHI']
+models = ['individual','athlete_v_nonathlete','ses','RHI']
 
 ### set up mlcs label array
 mlcs = ['Random Forest Classifier','Adaboost Classifier','Support Vector Classifier','KNeighbors Classifier','Decision Tree Classifier','Logistic Regression']
@@ -194,19 +194,64 @@ for ml in range(len(measures_loop)):
 print("machine learning complete.")
 
 ### generate plots of mlc results
-# model 4 noddi and dti results
-from plot_mlc_data import
+from mlc_scripts import computeRacBic,plotModelPerformance,plotMlcModelPerformance
+for ml in range(len(measures_loop)):
+	print("plotting mlc analyses: %s" %measures_loop[ml])
+	# diffusion measures
+	if ml < 3:
+		print("individual structures")
+		## individual structures
+		for tt in tissue_names[0:3]:
+			out_name = results_dir+'results_'+tt+'_'+measures_loop[ml]+'_summary.csv'
+			mlcdata = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv')
 
-# all models noddi and dti results
-from plot_mlc_data import
+			# calculate rac and bic
+			[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models,mlcs,len(df_subjects))
 
-# rac, bic, accuracy plots for noddi and dti
-from plot_mlc_data import
+			# save summary data structure and appended dataframe
+			mlcdata.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
+			mlcDataSummary.to_csv(out_name,index=False)
 
-# functional expertise noddi and dti
-from plot_mlc_data import
+			# plot violin plots of model accuracy
+			plotModelPerformance("model","percentages",mlcdata,img_dir,tt+"_"+measures_loop[ml]+"_accuracy")
 
-# non diffusion measures
-from plot_mlc_data import
+			# plot violin plots of model rac performance
+			plotModelPerformance("model","medianRac",mlcDataSummary,img_dir,tt+"_"+measures_loop[ml]+"_medianRac")
 
+			# plot violin plots of mlc-by-model bic
+			plotMlcModelPerformance("mlc","bic",mlcDataSummary,"bar",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_bic")
 
+			# plot violin plots of mlc-by-model rac
+			plotMlcModelPerformance("mlc","rac",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_rac")
+
+			# plot violin plots of mlc-by-model accuracy
+			plotMlcModelPerformance("mlc","percentages",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_accuracy")
+
+		## functional-based
+		print("functional domain groupings")
+		for tt in tissue_names[0:2]:
+			out_name = results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'_summary.csv'
+			mlcfuncdata = pd.DataFrame([])
+
+			# load data, concatenate into single structure and compute rac
+			for fl in functional_labels[tt]:
+				mlcdata = pd.read_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv')
+				mlcdata['functionalID'] = [ fl for f in range(len(mlcdata['model'])) ]
+				mlcfuncdata = pd.concat([mlcfuncdata,mlcdata],sort=False,ignore_index=True)
+
+			# save data
+			mlcfuncdata.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
+
+			# plot violin plot of accuracy
+			plotModelPerformance("functionalID","percentages",mlcfuncdata,img_dir,tt+"_functional_"+measures_loop[ml]+"_accuracy")
+	else:
+		print("non-diffusion analyses: %s" %tissue_names[ml-3])
+		# non diffusion measures
+		out_name = results_dir+'results_'+measures_loop[ml]+'_summary.csv'
+		mlcdata = pd.read_csv(results_dir+'results_'+measures_loop[ml]+'.csv')
+		
+		# plot violin plot of accuracy
+		plotModelPerformance("mlc","percentages",mlcdata,img_dir,measures_loop[ml]+"_accuracy")
+print("machine learning plotting complete.")
+
+# ANOVA ANALYSES (TO DO)
