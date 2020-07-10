@@ -57,7 +57,7 @@ functional_labels['cortex'] = ['frontal','temporal','parietal','occipital','insu
 
 # measures
 measures = {}
-measures_loop = ['all_diffusion','dti','noddi','track_mean_nondiffusion','cortex_nondiffusion','subcortex_nondiffusion','wholebrain_nondiffusion']
+measures_loop = ['all_diffusion','dti','noddi','track_mean_nondiffusion','cortex_nondiffusion','subcortex_nondiffusion','wholebrain_nondiffusion','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf','dti_fa_md']
 measures[measures_loop[0]] = ['ad','fa','md','rd','ndi','isovf','odi']
 measures[measures_loop[1]] = measures[measures_loop[0]][0:4]
 measures[measures_loop[2]] = measures[measures_loop[0]][4::]
@@ -65,6 +65,10 @@ measures[measures_loop[3]] = ['volume','length','count']
 measures[measures_loop[4]] = ['thickness','volume']
 measures[measures_loop[5]] = measures[measures_loop[4]][1]
 measures[measures_loop[6]] = ['Total Brain Volume','Total Cortical Gray Matter Volume','Total White Matter Volume','Total Cortical Thickness']
+measures[measures_loop[7]] = [measures[measures_loop[0]][4],measures[measures_loop[0]][6]]
+measures[measures_loop[8]] = measures[measures_loop[0]][4:6]
+measures[measures_loop[9]] = measures[measures_loop[0]][5:7]
+measures[measures_loop[10]] = measures[measures_loop[0]][1:3]
 
 # comparison models
 model_labels = {}
@@ -119,12 +123,12 @@ from mlc_scripts import gridsearch_algs
 for ml in range(len(measures_loop)):
 	if not os.path.exists(mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'):
 		best_parameters = {}
-		if ml < 3:
+		if not 'nondiffusion' in measures_loop[ml]:
 			for tt in tissue_names[0:3]:
 				print(tt)
 				best_parameters[tt] = gridsearch_algs(tt,df[tt],df_subjects,measures[measures_loop[ml]],measures_loop[ml],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
 		else:
-			best_parameters[measures_loop[ml]] = gridsearch_algs(measures_loop[ml],df[tissue_names[ml-3]],df_subjects,measures[measures_loop[ml]],measures_loop[ml],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
+			best_parameters[measures_loop[ml]] = gridsearch_algs(measures_loop[ml],df[measures_loop[ml]].split('_')[0],df_subjects,measures[measures_loop[ml]],measures_loop[ml],model_labels[models[0]],mlc_dict,text_dir,mlc_data_dir)
 
 		# write out best parameters for easier loading
 		out_name = mlc_data_dir+'best_params_struct_'+measures_loop[ml]+'.json'
@@ -143,7 +147,7 @@ for ml in range(len(measures_loop)):
 		best_parameters = json.load(best_params_f)
 	
 	# diffusion measures
-	if ml < 3:
+	if not 'nondiffusion' in measures_loop[ml]:
 		# individual structures
 		print("individual structures")
 		for tt in tissue_names[0:3]:
@@ -181,13 +185,13 @@ for ml in range(len(measures_loop)):
 	# non diffusion measures
 	else:
 		if not os.path.exists(results_dir+'results_'+measures_loop[ml]+'.csv'):
-			print("non-diffusion analyses: %s" %tissue_names[ml-3])
+			print("non-diffusion analyses: %s" %measures_loop[ml].split('_')[0])
 			tissue_type_output = pd.DataFrame([],columns={'iterations','mlc','model','percentages'})
 			for mc in range(len(mlcs)):
 				print(mlcs[mc])
 				model = mlc_dict[mlcs[mc]]['model'].set_params(**best_parameters[measures_loop[ml]][mlcs[mc]]['parameters'])
 				out_name = 'results_'+models[0]+'_'+mlcs[mc].replace(' ','_')+'_'+measures_loop[ml]
-				tissue_type_output = runModel(df[tissue_names[ml-3]],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
+				tissue_type_output = runModel(df[measures_loop[ml].split('_')[0]],df_subjects,model,mlcs[mc],model_labels[models[0]],models[0],measures[measures_loop[ml]],100,results_individ_dir,out_name,tissue_type_output)
 				
 			# output tissue type results
 			tissue_type_output.to_csv(results_dir+'results_'+measures_loop[ml]+'.csv',index=False)
@@ -198,7 +202,7 @@ from mlc_scripts import computeRacBic,plotModelPerformance,plotMlcModelPerforman
 for ml in range(len(measures_loop)):
 	print("plotting mlc analyses: %s" %measures_loop[ml])
 	# diffusion measures
-	if ml < 3:
+	if not 'nondiffusion' in measures_loop[ml]:
 		print("individual structures")
 		## individual structures
 		for tt in tissue_names[0:3]:
