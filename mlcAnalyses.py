@@ -10,6 +10,7 @@ from sklearn.model_selection import KFold,train_test_split,GridSearchCV,LeaveOne
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
 from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV,LeaveOneOut
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
