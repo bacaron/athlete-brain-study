@@ -6,17 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import json
-from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold,train_test_split,GridSearchCV,LeaveOneOut
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier,AdaBoostClassifier
 from sklearn.svm import SVC
-from sklearn.model_selection import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import LeaveOneOut
 from sklearn.preprocessing import StandardScaler
 
 ### setting up variables and adding paths
