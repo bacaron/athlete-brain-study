@@ -204,55 +204,58 @@ for ml in range(len(measures_loop)):
 		## individual structures
 		for tt in tissue_names[0:3]:
 			out_name = results_dir+'results_'+tt+'_'+measures_loop[ml]+'_summary.csv'
-			mlcdata = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv')
+			if not os.path.exists(out_name):
+				mlcdata = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv')
 
-			# calculate rac and bic
-			[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models,mlcs,len(df_subjects))
+				# calculate rac and bic
+				[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models,mlcs,len(df_subjects))
 
-			# save summary data structure and appended dataframe
-			mlcdata.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
-			mlcDataSummary.to_csv(out_name,index=False)
+				# save summary data structure and appended dataframe
+				mlcdata.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
+				mlcDataSummary.to_csv(out_name,index=False)
 
-			# plot violin plots of model accuracy
-			plotModelPerformance("model","percentages",mlcdata,img_dir,tt+"_"+measures_loop[ml]+"_accuracy")
+				# plot violin plots of model accuracy
+				plotModelPerformance("model","percentages",mlcdata,img_dir,tt+"_"+measures_loop[ml]+"_accuracy")
 
-			# plot violin plots of model rac performance
-			plotModelPerformance("model","medianRac",mlcDataSummary,img_dir,tt+"_"+measures_loop[ml]+"_medianRac")
+				# plot violin plots of model rac performance
+				plotModelPerformance("model","medianRac",mlcDataSummary,img_dir,tt+"_"+measures_loop[ml]+"_medianRac")
 
-			# plot violin plots of mlc-by-model bic
-			plotMlcModelPerformance("mlc","bic",mlcDataSummary,"bar",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_bic")
+				# plot violin plots of mlc-by-model bic
+				plotMlcModelPerformance("mlc","bic",mlcDataSummary,"bar",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_bic")
 
-			# plot violin plots of mlc-by-model rac
-			plotMlcModelPerformance("mlc","rac",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_rac")
+				# plot violin plots of mlc-by-model rac
+				plotMlcModelPerformance("mlc","rac",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_rac")
 
-			# plot violin plots of mlc-by-model accuracy
-			plotMlcModelPerformance("mlc","percentages",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_accuracy")
+				# plot violin plots of mlc-by-model accuracy
+				plotMlcModelPerformance("mlc","percentages",mlcdata,"violin",img_dir,tt+"_"+measures_loop[ml]+"_mlc_model_accuracy")
 
 		## functional-based
 		print("functional domain groupings")
 		for tt in tissue_names[0:2]:
 			out_name = results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'_summary.csv'
-			mlcfuncdata = pd.DataFrame([])
+			if not os.path.exists(out_name):
+				mlcfuncdata = pd.DataFrame([])
 
-			# load data, concatenate into single structure and compute rac
-			for fl in functional_labels[tt]:
-				mlcdata = pd.read_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv')
-				mlcdata['functionalID'] = [ fl for f in range(len(mlcdata['model'])) ]
-				mlcfuncdata = pd.concat([mlcfuncdata,mlcdata],sort=False,ignore_index=True)
+				# load data, concatenate into single structure and compute rac
+				for fl in functional_labels[tt]:
+					mlcdata = pd.read_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv')
+					mlcdata['functionalID'] = [ fl for f in range(len(mlcdata['model'])) ]
+					mlcfuncdata = pd.concat([mlcfuncdata,mlcdata],sort=False,ignore_index=True)
 
-			# save data
-			mlcfuncdata.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
+				# save data
+				mlcfuncdata.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
 
-			# plot violin plot of accuracy
-			plotModelPerformance("functionalID","percentages",mlcfuncdata,img_dir,tt+"_functional_"+measures_loop[ml]+"_accuracy")
+				# plot violin plot of accuracy
+				plotModelPerformance("functionalID","percentages",mlcfuncdata,img_dir,tt+"_functional_"+measures_loop[ml]+"_accuracy")
 	else:
 		print("non-diffusion analyses: %s" %tissue_names[ml-3])
 		# non diffusion measures
 		out_name = results_dir+'results_'+measures_loop[ml]+'_summary.csv'
-		mlcdata = pd.read_csv(results_dir+'results_'+measures_loop[ml]+'.csv')
-		
-		# plot violin plot of accuracy
-		plotModelPerformance("mlc","percentages",mlcdata,img_dir,measures_loop[ml]+"_accuracy")
+		if not os.path.exists(out_name):
+			mlcdata = pd.read_csv(results_dir+'results_'+measures_loop[ml]+'.csv')
+			
+			# plot violin plot of accuracy
+			plotModelPerformance("mlc","percentages",mlcdata,img_dir,measures_loop[ml]+"_accuracy")
 print("machine learning plotting complete.")
 
 # ANOVA ANALYSES (TO DO)
