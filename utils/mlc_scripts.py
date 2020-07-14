@@ -178,7 +178,7 @@ def runModel(df_nodes,df_subjects,mlc,mlc_name,model_labels,model_name,measures,
     return output
 
 ### calculate rac and bic
-def computeRacBic(data,models,mlcs,len_subjects):
+def computeRacBic(data,models,mlcs,len_subjects,func):
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -193,22 +193,36 @@ def computeRacBic(data,models,mlcs,len_subjects):
 
     # calculate rac and append to input data structure
     for perc in range(len(data['percentages'])):
-        if data['model'][perc] == models[0]:
-            chance = 1/3
+        if func == False:
+            if data['model'][perc] == models[0]:
+                chance = 1/3
+            else:
+                chance = 1/2
         else:
-            chance = 1/2
+            chance = 1/3
+
         rac.append((data['percentages'][perc] - chance) / (1 - chance))
     data['rac'] = rac
 
     # append data to output summary dataframe
-    for model in models:
+    if func == False:
+        for model in models:
             tmpData = pd.DataFrame([])
             tmpData['mlc'] = mlcs
             tmpData['model'] = [ model for f in range(len(tmpData['mlc'])) ]
             tmpData['medianRac'] = list(data[data['model']==model].groupby('mlc',sort=False).median()['rac'])
             tmpData['meanAcc'] = list(data[data['model']==model].groupby('mlc',sort=False).mean()['percentages'])
             tmpData['logLikelihoodRac'] = list(np.log10(data[data['model']==model].groupby('mlc',sort=False).mean()['rac']))
-            outputData = pd.concat([outputData,tmpData],sort=False,ignore_index=True)  
+            outputData = pd.concat([outputData,tmpData],sort=False,ignore_index=True)
+    else:
+        model = models
+        tmpData = pd.DataFrame([])
+        tmpData['mlc'] = mlcs
+        tmpData['model'] = [ model for f in range(len(tmpData['mlc'])) ]
+        tmpData['medianRac'] = list(data.groupby('mlc',sort=False).median()['rac'])
+        tmpData['meanAcc'] = list(data.groupby('mlc',sort=False).mean()['percentages'])
+        tmpData['logLikelihoodRac'] = list(np.log10(data.groupby('mlc',sort=False).mean()['rac']))
+        outputData = pd.concat([outputData,tmpData],sort=False,ignore_index=True)
 
     # compute bic and append to output summary dataframe
     for mlc in range(len(outputData['logLikelihoodRac'])):
@@ -302,3 +316,29 @@ def plotMlcModelPerformance(x_measure,y_measure,data,kind,dir_out,out_name):
         plt.savefig(os.path.join(dir_out, img_out_png))       
     else:
         plt.show()
+
+def diffusionComparisonPlots(data,x_measure,y_measure,hue_measure,col_measure,kind,dir_out,out_name,sep_tissue):
+
+    import pandas as pd, numpy as np, seaborn as sns, glob, matplotlib.pyplot as plt
+    
+    img_out=out_name+'.eps'
+    img_out_png = out_name+'.png'
+
+    if sep_tissue == True:
+        # separated by tissues
+        fg = (sns.catplot(x=x_measure,y=y_measure,hue=hue_measure,col=col_measure,kind=kind,data=data,aspect=2)).set_xticklabels(rotation=75)
+    else:
+       # collapsed across models
+        fg = (sns.catplot(x=x_measure,y=y_measure,hue=hue_measure,kind=kind,data=data,aspect=2)).set_xticklabels(rotation=75)
+
+    fg.set(ylim=(-0.6,1.6))
+    fg.set(yticks=np.arange(-0.6,1.6,0.1))
+    
+    if dir_out:
+        if not os.path.exists(dir_out):
+            os.mkdir(dir_out)
+    
+    plt.savefig(os.path.join(dir_out, img_out))
+    plt.savefig(os.path.join(dir_out, img_out_png))
+
+    plt.close()

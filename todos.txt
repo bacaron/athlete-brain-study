@@ -1,2 +1,3 @@
 #to dos
-1) make anova code
+1) identify best anovas to run and do that
+2) identify why nondiffusion has rac already calculated, make summary structure and plot data

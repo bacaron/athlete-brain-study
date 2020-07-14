@@ -194,7 +194,7 @@ for ml in range(len(measures_loop)):
 			tissue_type_output.to_csv(results_dir+'results_'+measures_loop[ml]+'.csv',index=False)
 print("machine learning complete.")
 
-### generate plots of mlc results
+### generate individual plots of mlc results
 from mlc_scripts import computeRacBic,plotModelPerformance,plotMlcModelPerformance
 for ml in range(len(measures_loop)):
 	print("plotting mlc analyses: %s" %measures_loop[ml])
@@ -208,7 +208,7 @@ for ml in range(len(measures_loop)):
 				mlcdata = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv')
 
 				# calculate rac and bic
-				[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models,mlcs,len(df_subjects))
+				[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models,mlcs,len(df_subjects),False)
 
 				# save summary data structure and appended dataframe
 				mlcdata.to_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'.csv',index=False)
@@ -231,31 +231,167 @@ for ml in range(len(measures_loop)):
 
 		## functional-based
 		print("functional domain groupings")
-		for tt in tissue_names[0:2]:
-			out_name = results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'_summary.csv'
-			if not os.path.exists(out_name):
-				mlcfuncdata = pd.DataFrame([])
+		for ml in range(len(measures_loop)):
+			if not 'nondiffusion'  in measures_loop[ml]:
+				for tt in tissue_names[0:2]:
+					out_name = results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'_summary.csv'
+					if not os.path.exists(out_name):
+						mlcfuncdata = pd.DataFrame([])
+						mlcFuncDataSummary = pd.DataFrame([])
 
-				# load data, concatenate into single structure and compute rac
-				for fl in functional_labels[tt]:
-					mlcdata = pd.read_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv')
-					mlcdata['functionalID'] = [ fl for f in range(len(mlcdata['model'])) ]
-					mlcfuncdata = pd.concat([mlcfuncdata,mlcdata],sort=False,ignore_index=True)
+						# load data, concatenate into single structure and compute rac
+						for fl in functional_labels[tt]:
+							mlcdata = pd.read_csv(results_dir+'results_'+tt+'_functional_'+fl+'_'+measures_loop[ml]+'.csv')
+							mlcdata['functionalID'] = [ fl for f in range(len(mlcdata['model'])) ]
+							
+							# make summary and compute bic rac
+							[mlcdata,mlcDataSummary] = computeRacBic(mlcdata,models[0],mlcs,len(df_subjects),func=True)
+							mlcDataSummary['functionalID'] = [ fl for f in range(len(mlcDataSummary['model'])) ]
 
-				# save data
-				mlcfuncdata.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
+							mlcfuncdata = pd.concat([mlcfuncdata,mlcdata],sort=False,ignore_index=True)
+							mlcFuncDataSummary = pd.concat([mlcFuncDataSummary,mlcDataSummary],sort=False,ignore_index=True)
 
-				# plot violin plot of accuracy
-				plotModelPerformance("functionalID","percentages",mlcfuncdata,img_dir,tt+"_functional_"+measures_loop[ml]+"_accuracy")
+						# save data
+						mlcfuncdata.to_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'.csv',index=False)
+						mlcFuncDataSummary.to_csv(out_name,index=False)
+
+						# plot violin plot of accuracy
+						plotModelPerformance("functionalID","percentages",mlcfuncdata,img_dir,tt+"_functional_"+measures_loop[ml]+"_accuracy")
 	else:
 		print("non-diffusion analyses: %s" %tissue_names[ml-3])
 		# non diffusion measures
 		out_name = results_dir+'results_'+measures_loop[ml]+'_summary.csv'
 		if not os.path.exists(out_name):
+
 			mlcdata = pd.read_csv(results_dir+'results_'+measures_loop[ml]+'.csv')
 			
 			# plot violin plot of accuracy
 			plotModelPerformance("mlc","percentages",mlcdata,img_dir,measures_loop[ml]+"_accuracy")
+
+### generate measure comparison plots of mlc results
+from mlc_scripts import diffusionComparisonPlots
+# diffusion measures
+out_name = results_dir+'results_all_tissue_diffusion_summary.csv'
+if not os.path.exists(out_name):
+	mlcdiffusdata = pd.DataFrame([])
+	for tt in tissue_names[0:3]:
+		data = pd.DataFrame([])
+		tissues_df = pd.DataFrame([])
+
+		for ml in range(len(measures_loop)):
+			if not 'nondiffusion' in measures_loop[ml]:
+				data = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'_summary.csv')
+				data['tissue'] = [ tt for f in range(len(data['medianRac'])) ]
+				data['measures'] = [ measures_loop[ml] for f in range(len(data['medianRac'])) ]
+				tissues_df = pd.concat([tissues_df,data],sort=False,ignore_index=True) 
+				tissues_df.loc[tissues_df['model'] == 'indvidual','model'] = 'individual'
+		mlcdiffusdata = pd.concat([mlcdiffusdata,tissues_df],sort=False,ignore_index=True)
+
+	mlcdiffusdata.to_csv(out_name,index=False)
+
+	## all diffusion, noddi, dti
+	for tc in ["model","tissue"]:
+
+		if tc == 'model':
+			sep_tissues = True
+		else:
+			sep_tissues = False
+
+		# bar graph
+		img_name = "all_diffusion_dti_noddi_"+tc+"_rac"
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+		# violin plot
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+		## dti_fa_md, noddi_ndi_odi, noddi_ndi_isovf, noddi_odi_isovf
+		# bar graph
+		img_name = "subsets_"+tc+"_rac"
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+		# violin plot
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+# functional expertise diffusion measures
+out_name = results_dir+'results_all_tissue_functional_diffusion_summary.csv'
+if not os.path.exists(out_name):
+	mlcfuncdiffusdata = pd.DataFrame([])
+	for tt in tissue_names[0:2]:
+		data = {}
+		tissues_df = pd.DataFrame([])
+
+		for ml in range(len(measures_loop)):
+			if not 'nondiffusion' in measures_loop[ml]:
+				data[ml] = pd.read_csv(results_dir+'results_'+tt+'_functional_'+measures_loop[ml]+'_summary.csv')
+				data[ml]['measures'] = [ measures_loop[ml] for f in range(len(data[ml]['medianRac'])) ]
+				data[ml]['tissue'] = [ tt for f in range(len(data[ml]['medianRac'])) ]
+				tissues_df = pd.concat([tissues_df,data[ml]],ignore_index=True) 
+				tissues_df.loc[tissues_df['model'] == 'indvidual','model'] = 'individual'
+		mlcfuncdiffusdata = pd.concat([mlcfuncdiffusdata,tissues_df])
+
+	mlcfuncdiffusdata.to_csv(out_name,index=False)
+
+	## all diffusion, noddi, dti
+	tc = "functionalID"
+	sep_tissues = False
+	# bar graph
+	img_name = "all_diffusion_dti_noddi_functional_rac"
+	diffusionComparisonPlots(mlcfuncdiffusdata[mlcfuncdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+	# violin plot
+	diffusionComparisonPlots(mlcfuncdiffusdata[mlcfuncdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+	## dti_fa_md, noddi_ndi_odi, noddi_ndi_isovf, noddi_odi_isovf
+	# bar graph
+	img_name = "subsets_functional_rac"
+	diffusionComparisonPlots(mlcfuncdiffusdata[mlcfuncdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+	# violin plot
+	diffusionComparisonPlots(mlcfuncdiffusdata[mlcfuncdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+# non-diffusion measures
+out_name = results_dir+'results_all_tissue_non_diffusion_summary.csv'
+if not os.path.exists(out_name):
+	mlcdiffusdata = pd.DataFrame([])
+	for tt in tissue_names[0:3]:
+		data = pd.DataFrame([])
+		tissues_df = pd.DataFrame([])
+
+		for ml in range(len(measures_loop)):
+			if not 'nondiffusion' in measures_loop[ml]:
+				data = pd.read_csv(results_dir+'results_'+tt+'_'+measures_loop[ml]+'_summary.csv')
+				data['tissue'] = [ tt for f in range(len(data['medianRac'])) ]
+				data['measures'] = [ measures_loop[ml] for f in range(len(data['medianRac'])) ]
+				tissues_df = pd.concat([tissues_df,data],sort=False,ignore_index=True) 
+				tissues_df.loc[tissues_df['model'] == 'indvidual','model'] = 'individual'
+		mlcdiffusdata = pd.concat([mlcdiffusdata,tissues_df],sort=False,ignore_index=True)
+
+	mlcdiffusdata.to_csv(out_name,index=False)
+
+	## all diffusion, noddi, dti
+	for tc in ["model","tissue"]:
+
+		if tc == 'model':
+			sep_tissues = True
+		else:
+			sep_tissues = False
+
+		# bar graph
+		img_name = "all_diffusion_dti_noddi_"+tc+"_rac"
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+		# violin plot
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['all_diffusion','dti','noddi'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+		## dti_fa_md, noddi_ndi_odi, noddi_ndi_isovf, noddi_odi_isovf
+		# bar graph
+		img_name = "subsets_"+tc+"_rac"
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","bar",img_dir,img_name+'_bar',sep_tissues)
+
+		# violin plot
+		diffusionComparisonPlots(mlcdiffusdata[mlcdiffusdata['measures'].isin(['dti_fa_md','noddi_ndi_odi','noddi_ndi_isovf','noddi_odi_isovf'])],tc,"medianRac","measures","tissue","violin",img_dir,img_name+'_violin',sep_tissues)
+
+
 print("machine learning plotting complete.")
 
 # ANOVA ANALYSES (TO DO)
