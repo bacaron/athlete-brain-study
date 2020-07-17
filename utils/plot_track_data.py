@@ -259,3 +259,57 @@ def plotTrackMicrostructureProfiles(groups,colors,tracks,stat,diffusion_measures
 				plt.show()
 
 			plt.close(fig)
+
+def plotDifferenceHistograms(stat,diffusion_measures,dir_out):
+	import matplotlib.pyplot as plt
+	import os,sys
+	import seaborn as sns
+
+	img_out = "track_difference_histograms.eps"
+	img_out_png = "track_difference_histograms.png"
+
+	f, axes = plt.subplots(2, 4, figsize=(15, 15), sharex=True, sharey=True)
+	f.suptitle("Average Difference - Tracts")
+
+	#f.set_ylim([0,(len(tracks)+1)])
+	colors = ['orange','pink','blue']
+
+	for dm in range(len(diffusion_measures)):
+		if diffusion_measures[dm] in ['ad','fa','md','rd']:
+			row = 1
+			column = dm
+		else:
+			row = 0
+			column = dm - 4
+
+		#plt.xlim([-0.1,0.1])
+
+		# set spines and ticks
+		axes[row,column].spines['right'].set_visible(False)
+		axes[row,column].spines['top'].set_visible(False)
+		axes[row,column].yaxis.set_ticks_position('left')
+		axes[row,column].xaxis.set_ticks_position('bottom')
+
+		axes[row,column].patch.set_visible(False)
+
+		fb_cc = stat[['structureID',diffusion_measures[dm]]][stat['class']=='football'].groupby('structureID').mean() - stat[['structureID',diffusion_measures[dm]]][stat['class']=='cross_country'].groupby('structureID').mean()      
+		fb_na = stat[['structureID',diffusion_measures[dm]]][stat['class']=='football'].groupby('structureID').mean() - stat[['structureID',diffusion_measures[dm]]][stat['class']=='non_athlete'].groupby('structureID').mean()
+		cc_na = stat[['structureID',diffusion_measures[dm]]][stat['class']=='cross_country'].groupby('structureID').mean() - stat[['structureID',diffusion_measures[dm]]][stat['class']=='non_athlete'].groupby('structureID').mean()
+		
+		j = 0
+		for compar in [fb_na,cc_na,fb_cc]:
+			sns.distplot(compar,kde=False,hist=True,hist_kws={"histtype": "step","linewidth": 3},color=colors[j],bins=20,ax=axes[row,column],axlabel=diffusion_measures[dm],label="diff: %.3f" %compar.mean()[0])
+			j = j +1
+		
+		axes[row,column].axvline(x=0, color='black', linestyle='--', linewidth=3)
+		axes[row,column].legend()
+	
+	# save or show plot
+	if dir_out:
+		if not os.path.exists(dir_out):
+			os.mkdir(dir_out)
+
+		plt.savefig(os.path.join(dir_out, img_out))
+		plt.savefig(os.path.join(dir_out, img_out_png))       
+	else:
+		plt.show()

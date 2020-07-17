@@ -14,7 +14,7 @@ os.chdir(topPath)
 scripts_dir = topPath+'/athlete_brain_study/'
 utils_dir = scripts_dir+'/utils/'
 data_dir = topPath+'/data/'
-img_dir = topPath+'/img/'
+img_dir = img_dir
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
 sys.path.insert(0,scripts_dir)
@@ -26,6 +26,7 @@ diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
 functional_tracks = ['association','projection','commissural']
 lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
 configs_dir = topPath + '/athlete_brain_study/configs/'
+img_dir=img_dir
 
 colors = {}
 subjects = {}
@@ -55,7 +56,7 @@ snr = collectSNRData(topPath,data_dir,groups,subjects)
 
 # plot data
 from plot_track_data import plotSNR
-plotSNR(list(snr['snr']),list(snr['subjectID']),list(subjects_data['colors']),dir_out=topPath+"/img/")
+plotSNR(list(snr['snr']),list(snr['subjectID']),list(subjects_data['colors']),dir_out=img_dir)
 print("plotting snr data complete")
 
 ### generate wholebrain plots
@@ -67,7 +68,7 @@ wholebrain = collectWholeBrainStats(topPath,data_dir,groups,subjects)
 # plot data
 from plot_cortex_data import plotWholeBrainData
 for dc in ['subjectID','Total Brain Volume','Total Cortical Gray Matter Volume','Total White Matter Volume','Total Cortical Thickness']:
-	plotWholeBrainData(groups,colors,dc,wholebrain,dir_out=topPath+"/img/")
+	plotWholeBrainData(groups,colors,dc,wholebrain,dir_out=img_dir)
 print("plotting whole brain stats complete")
 
 ### group average white matter analyses
@@ -92,19 +93,23 @@ functional_track_data = compileFunctionalData(data_dir,track_mean_data,functiona
 ## length, volume, streamline count of tracks
 from plot_track_data import plotTrackMacroData
 for dc in ['volume','length','count']:
-	plotTrackMacroData(groups,colors,dc,track_mean_data,diff_measures,dir_out=topPath+'/img/')
+	plotTrackMacroData(groups,colors,dc,track_mean_data,diff_measures,dir_out=img_dir)
 
 ## DTI/NODDI tract profiles
 from plot_track_data import plotTrackMicrostructureProfiles
-plotTrackMicrostructureProfiles(groups,colors,track_names,track_data,diff_measures,dir_out=topPath+'/img/')
+plotTrackMicrostructureProfiles(groups,colors,track_names,track_data,diff_measures,dir_out=img_dir)
 
 ## collision vs non-collision scatter
 from plot_track_data import collisionVNonCollisionTrackScatter
-collisionVNonCollisionTrackScatter(groups,colors,track_mean_data,diff_measures,dir_out=topPath+'/img/')
+collisionVNonCollisionTrackScatter(groups,colors,track_mean_data,diff_measures,dir_out=img_dir)
 
 ## DTI/NODDI scatter plots (group averages)
 from plot_track_data import plotTrackMicrostructureAverage
-plotTrackMicrostructureAverage(groups,colors,track_names,track_mean_data,diff_measures,dir_out=topPath+'/img/')
+plotTrackMicrostructureAverage(groups,colors,track_names,track_mean_data,diff_measures,dir_out=img_dir)
+
+## group difference histograms
+from plot_track_data import plotDifferenceHistograms
+plotDifferenceHistograms(track_mean_data,diff_measures,dir_out=img_dir)
 
 print("computing group average white matter track analyses complete")
 
@@ -131,16 +136,21 @@ functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=
 # cortical thickness/volume by diffusion measure per cortical parcel
 from plot_cortex_data import plotCorticalParcelData
 for dc in ['volume','thickness']:
-	plotCorticalParcelData(groups,colors,dc,cortical,diff_measures,dir_out=topPath+'/img/')
+	plotCorticalParcelData(groups,colors,dc,cortical,diff_measures,dir_out=img_dir)
 
 ## collision vs non-collision scatter
 from plot_cortex_data import collisionVNonCollisionParcelScatter
-collisionVNonCollisionParcelScatter(groups,colors,cortical,subcortical,diff_measures,dir_out=topPath+'/img/')
+collisionVNonCollisionParcelScatter(groups,colors,cortical,subcortical,diff_measures,dir_out=img_dir)
 
 ## lobe averages
 from plot_cortex_data import plotLobeMicrostructureAverage
-plotLobeMicrostructureAverage(groups,colors,lobes,lobe_data,diff_measures,dir_out=topPath+'/img/')
-print("computing group average gray matter parcel analyses")
+plotLobeMicrostructureAverage(groups,colors,lobes,lobe_data,diff_measures,dir_out=img_dir)
+
+## group difference histograms
+from plot_cortex_data import plotDifferenceHistograms
+plotDifferenceHistograms("cortical",cortical,diff_measures,dir_out=img_dir)
+plotDifferenceHistograms("subcortical",subcortical,diff_measures,dir_out=img_dir)
+print("computing group average gray matter parcel analyses complete")
 
 print("project data has been generated and plotted. time for machine learning!")
 
