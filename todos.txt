@@ -1,3 +1,4 @@
 #to dos
-1) identify best anovas to run and do that
-2) identify why nondiffusion has rac already calculated, make summary structure and plot data
+1) finish anovas and add final details regarding summary statistics to paper
+2) remove mlc components
+3) update readme to remove mlc components

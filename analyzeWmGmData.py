@@ -14,7 +14,9 @@ os.chdir(topPath)
 scripts_dir = topPath+'/athlete_brain_study/'
 utils_dir = scripts_dir+'/utils/'
 data_dir = topPath+'/data/'
-img_dir = img_dir
+if not os.path.exists(data_dir):
+	os.mkdir(data_dir)
+img_dir = topPath+'/img/'
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
 sys.path.insert(0,scripts_dir)
@@ -26,7 +28,6 @@ diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
 functional_tracks = ['association','projection','commissural']
 lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
 configs_dir = topPath + '/athlete_brain_study/configs/'
-img_dir=img_dir
 
 colors = {}
 subjects = {}
@@ -109,8 +110,11 @@ plotTrackMicrostructureAverage(groups,colors,track_names,track_mean_data,diff_me
 
 ## group difference histograms
 from plot_track_data import plotDifferenceHistograms
-plotDifferenceHistograms(track_mean_data,diff_measures,dir_out=img_dir)
+plotDifferenceHistograms(groups,subjects,track_mean_data,diff_measures,colors,dir_out=img_dir)
 
+## bootstrapped histograms
+from plot_track_data import plotBoostrappedDifference
+plotBootstrappedDifference(groups,subjects,track_mean_data,diffusion_measures,colors,1000,0.05,img_dir,data_dir+"/tracks_boostrapped")
 print("computing group average white matter track analyses complete")
 
 ### group average cortex mapping analyses
@@ -148,8 +152,13 @@ plotLobeMicrostructureAverage(groups,colors,lobes,lobe_data,diff_measures,dir_ou
 
 ## group difference histograms
 from plot_cortex_data import plotDifferenceHistograms
-plotDifferenceHistograms("cortical",cortical,diff_measures,dir_out=img_dir)
-plotDifferenceHistograms("subcortical",subcortical,diff_measures,dir_out=img_dir)
+plotDifferenceHistograms(groups,subjects,"cortical",cortical,diff_measures,colors,dir_out=img_dir)
+plotDifferenceHistograms(groups,subjects,"subcortical",subcortical,diff_measures,colors,dir_out=img_dir)
+
+## bootstrapped histograms
+from plot_cortex_data import plotBoostrappedDifference
+plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,1000,0.05,img_dir,data_dir+"/cortex_boostrapped")
+plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,1000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
 print("computing group average gray matter parcel analyses complete")
 
 print("project data has been generated and plotted. time for machine learning!")
