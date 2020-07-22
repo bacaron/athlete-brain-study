@@ -100,21 +100,28 @@ for dc in ['volume','length','count']:
 from plot_track_data import plotTrackMicrostructureProfiles
 plotTrackMicrostructureProfiles(groups,colors,track_names,track_data,diff_measures,dir_out=img_dir)
 
-## collision vs non-collision scatter
-from plot_track_data import collisionVNonCollisionTrackScatter
-collisionVNonCollisionTrackScatter(groups,colors,track_mean_data,diff_measures,dir_out=img_dir)
+# ## collision vs non-collision scatter
+# from plot_track_data import collisionVNonCollisionTrackScatter
+# collisionVNonCollisionTrackScatter(groups,colors,track_mean_data,diff_measures,dir_out=img_dir)
 
 ## DTI/NODDI scatter plots (group averages)
+from compile_data import computeRankOrderEffectSize
 from plot_track_data import plotTrackMicrostructureAverage
-plotTrackMicrostructureAverage(groups,colors,track_names,track_mean_data,diff_measures,dir_out=img_dir)
+rank_order_tracks = computeRankOrderEffectSize(groups,subjects,'tracks',measures,track_mean,[diff_measures[0:4],diff_measures[4:]],data_dir)
+plotTrackMicrostructureAverage(groups,colors,rank_order_tracks['tensor'],track_mean_data,diff_measures[0:4],dir_out=img_dir)
+plotTrackMicrostructureAverage(groups,colors,rank_order_tracks['noddi'],track_mean_data,diff_measures[4:],dir_out=img_dir)
 
 ## group difference histograms
 from plot_track_data import plotDifferenceHistograms
 plotDifferenceHistograms(groups,subjects,track_mean_data,diff_measures,colors,dir_out=img_dir)
 
+## h0 boostrapping test
+from plot_track_data import plotBootstrappedH0TrackAverageDifference
+plotBootstrappedH0TrackAverageDifference(groups,subjects,track_mean_data,diff_measures,colors,10000,img_dir)
+
 ## bootstrapped histograms
-from plot_track_data import plotBoostrappedDifference
-plotBootstrappedDifference(groups,subjects,track_mean_data,diffusion_measures,colors,1000,0.05,img_dir,data_dir+"/tracks_boostrapped")
+from plot_track_data import plotBootstrappedDifference
+plotBootstrappedDifference(groups,subjects,track_mean_data,diff_measures,colors,10000,0.05,img_dir,data_dir+"/tracks_boostrapped")
 print("computing group average white matter track analyses complete")
 
 ### group average cortex mapping analyses
@@ -147,21 +154,32 @@ from plot_cortex_data import collisionVNonCollisionParcelScatter
 collisionVNonCollisionParcelScatter(groups,colors,cortical,subcortical,diff_measures,dir_out=img_dir)
 
 ## lobe averages
-from plot_cortex_data import plotLobeMicrostructureAverage
-plotLobeMicrostructureAverage(groups,colors,lobes,lobe_data,diff_measures,dir_out=img_dir)
+from plot_cortex_data import plotMicrostructureAverage
+rank_order_lobes = computeRankOrderEffectSize(groups,subjects,'lobes',diff_measures,lobes_data,[diff_measures[0:4],diff_measures[4:]],data_dir)
+plotMicrostructureAverage(groups,colors,'lobes',rank_order_lobes['tensor'],lobe_data,diff_measures[0:4],dir_out=img_dir)
+plotMicrostructureAverage(groups,colors,'lobes',rank_order_lobes['noddi'],lobe_data,diff_measures[4:],dir_out=img_dir)
+
+## subcortical averages
+rank_order_subcortex = computeRankOrderEffectSize(groups,subjects,'subcortex',diff_measures,subcortical,[diff_measures[0:4],diff_measures[4:]],data_dir)
+plotMicrostructureAverage(groups,colors,'subcortex',rank_order_subcortex['tensor'],subcortical,diff_measures[0:4],dir_out=img_dir)
+plotMicrostructureAverage(groups,colors,'subcortex',rank_order_subcortex['noddi'],subcortical,diff_measures[4:],dir_out=img_dir)
 
 ## group difference histograms
 from plot_cortex_data import plotDifferenceHistograms
 plotDifferenceHistograms(groups,subjects,"cortical",cortical,diff_measures,colors,dir_out=img_dir)
 plotDifferenceHistograms(groups,subjects,"subcortical",subcortical,diff_measures,colors,dir_out=img_dir)
 
+## h0 boostrapping test
+from plot_cortex_data import plotBootstrappedH0PooledParcelAverageDifference
+plotBootstrappedH0PooledParcelAverageDifference(groups,subjects,cortical,'cortical',diff_measures,colors,10000,img_dir)
+plotBootstrappedH0PooledParcelAverageDifference(groups,subjects,subcortical,'subcortical',diff_measures,colors,10000,img_dir)
+
 ## bootstrapped histograms
 from plot_cortex_data import plotBoostrappedDifference
-plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,1000,0.05,img_dir,data_dir+"/cortex_boostrapped")
-plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,1000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
+plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,10009,0.05,img_dir,data_dir+"/cortex_boostrapped")
+plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
 print("computing group average gray matter parcel analyses complete")
-
-print("project data has been generated and plotted. time for machine learning!")
+print("project data has been generated and plotted!")
 
 
 

@@ -151,6 +151,49 @@ def combineTrackMacroMicro(dataPath,macroData,microData):
 
 	return [data,data_mean]
 
+### rank order effect size calculator
+def computeRankOrderEffectSize(groups,subjects,tissue,measures,stat,measures_to_average,data_dir):
+	import pandas as pd
+	import numpy as np
+	from itertools import combinations
+
+	comparison_array = list(combinations(groups,2)) # 3 x 2 array; 3 different comparisons, with two pairs per comparison. comparison_array[0] = ("football","cross_country")
+	es = {}
+	roes = {}
+
+	# compute effect size
+	for compar in comparison_array:
+		es[compar[0]+"_"+compar[1]] = pd.DataFrame([])
+		tmp = pd.DataFrame([])
+		tmp['structureID'] = stat['structureID'].unique()
+		for m in measures:
+			diff = stat[['structureID',m]][stat['subjectID'].isin(subjects[compar[0]])].groupby('structureID').mean() - stat[['structureID',m]][stat['subjectID'].isin(subjects[compar[1]])].groupby('structureID').mean()
+			pooled_var = (np.sqrt((stat[['structureID',m]][stat['subjectID'].isin(subjects[compar[0]])].groupby('structureID').std() ** 2 + stat[['structureID',m]][stat['subjectID'].isin(subjects[compar[1]])].groupby('structureID').std() ** 2) / 2))
+			effectSize = diff / pooled_var
+			tmp[m+"_effect_size"] = list(effectSize[m])
+		tmp.to_csv(data_dir+tissue+"_effect_sizes_"+compar[0]+"_"+compar[1]+".csv",index=False)
+		es[compar[0]+"_"+compar[1]] = pd.concat([es[compar[0]+"_"+compar[1]],tmp],ignore_index=True)
+
+	# rank order structures
+	for ma in measures_to_average:
+		if ma == ['ad','fa','md','rd']:
+			model = 'tensor'
+		else:
+			model = 'noddi'
+
+		tmpdata = pd.DataFrame([])
+		tmpdata['structureID'] = stat['structureID'].unique()
+		for compar in comparison_array:
+			if model == 'tensor':
+				tmpdata[compar[0]+"_"+compar[1]+"_"+model+"_average_effect_size"] = es[compar[0]+"_"+compar[1]][['ad_effect_size','fa_effect_size','md_effect_size','rd_effect_size']].abs().mean(axis=1).tolist()
+			else:
+				tmpdata[compar[0]+"_"+compar[1]+"_"+model+"_average_effect_size"] = es[compar[0]+"_"+compar[1]][['ndi_effect_size','isovf_effect_size','odi_effect_size']].abs().mean(axis=1).tolist()
+		tmpdata[model+"_average_effect_size"] =  tmpdata.mean(axis=1).tolist()
+		tmpdata.to_csv(data_dir+model+"_average_"+tissue+"_effect_sizes.csv",index=False)
+		roes[model] = tmpdata.sort_values(by=model+"_average_effect_size")['structureID'].tolist()
+
+	return roes
+
 ### functional track/lobedata
 def compileFunctionalData(dataPath,structureData,functionalLabels,labelsPath):
 
