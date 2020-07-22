@@ -200,7 +200,7 @@ def plotTrackMicrostructureAverage(groups,colors,tracks,stat,diffusion_measures,
 
 		for l in range(len(tracks)):
 			for g in range(len(groups)):
-				p.errorbar(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(np.unique(stat['subjectID'])) - 1)),color=colors[groups[g]],marker='o',ms=10)
+				p.errorbar(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(stat[stat['subjectID'].str.contains('%s_' %str(g+1))]['subjectID'].unique()))),barsabove=True,ecolor='black',color=colors[groups[g]],marker='o',ms=10)
 
 		# save or show plot
 		if dir_out:

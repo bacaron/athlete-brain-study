@@ -203,7 +203,7 @@ def plotMicrostructureAverage(groups,colors,tissue,structures,stat,diffusion_mea
 
 		for l in range(len(structures)):
 			for g in range(len(groups)):
-				p.errorbar(stat[dm][stat['structureID'] == structures[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == structures[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(np.unique(stat['subjectID'])) - 1)),color=colors[groups[g]],marker='o',ms=25)
+				p.errorbar(stat[dm][stat['structureID'] == structures[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == structures[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(stat[stat['subjectID'].str.contains('%s_' %str(g+1))]['subjectID'].unique()))),barsabove=True,ecolor='black',color=colors[groups[g]],marker='o',ms=25)
 
 		# save or show plot
 		if dir_out:

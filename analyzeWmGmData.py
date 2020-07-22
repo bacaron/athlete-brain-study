@@ -107,7 +107,7 @@ plotTrackMicrostructureProfiles(groups,colors,track_names,track_data,diff_measur
 ## DTI/NODDI scatter plots (group averages)
 from compile_data import computeRankOrderEffectSize
 from plot_track_data import plotTrackMicrostructureAverage
-rank_order_tracks = computeRankOrderEffectSize(groups,subjects,'tracks',measures,track_mean,[diff_measures[0:4],diff_measures[4:]],data_dir)
+rank_order_tracks = computeRankOrderEffectSize(groups,subjects,'tracks',diff_measures,track_mean_data,[diff_measures[0:4],diff_measures[4:]],data_dir)
 plotTrackMicrostructureAverage(groups,colors,rank_order_tracks['tensor'],track_mean_data,diff_measures[0:4],dir_out=img_dir)
 plotTrackMicrostructureAverage(groups,colors,rank_order_tracks['noddi'],track_mean_data,diff_measures[4:],dir_out=img_dir)
 
@@ -175,7 +175,7 @@ plotBootstrappedH0PooledParcelAverageDifference(groups,subjects,cortical,'cortic
 plotBootstrappedH0PooledParcelAverageDifference(groups,subjects,subcortical,'subcortical',diff_measures,colors,10000,img_dir)
 
 ## bootstrapped histograms
-from plot_cortex_data import plotBoostrappedDifference
+from plot_cortex_data import plotBootstrappedDifference
 plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,10009,0.05,img_dir,data_dir+"/cortex_boostrapped")
 plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
 print("computing group average gray matter parcel analyses complete")
