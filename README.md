@@ -68,6 +68,7 @@ This repository requires the following libraries when run locally.
 - scipy: https://www.scipy.org/install.html
 - scikit-learn: https://scikit-learn.org/stable/install.html
 - statsmodels: https://www.statsmodels.org/stable/install.html
+- pinguoin: https://pingouin-stats.org/
 
 ### Docker container
 
@@ -75,7 +76,7 @@ A docker container exists containing all of the dependencies necessary for runni
 
 ### To run locally
 
-To run locally, you'll first need to download the appropriate data using the bl_download.sh shell script. Once the data is downloaded, you can run via python3 the analyzeWmGmData.py script to generate the summary data structures and figures. To run the machine learning analyses, you can run via python3 the mlcAnalyses.py script to run the machine-learning analyses, including model fitting, data summary, and figure generation. This script will take over 30 hours to complete as the machine-learning is not fully optimized.
+To run locally, you'll first need to download the appropriate data using the bl_download.sh shell script. Once the data is downloaded, you can run via python3 the analyzeWmGmData.py script to generate the summary data structures and figures. This route requires all of the dependencies to be installed on your machine.
 
-If you have singularity installed, you can run the entire analysis pipeline by running via shell/bash the main script. This will run the scripts for downloading and analyzing the data via singularity using the docker container described above.
+If you have singularity installed, you can run the entire analysis pipeline by running via shell/bash the main script. This will run the scripts for downloading and analyzing the data via singularity using the docker container described above. This route does not require all of the dependencies to be installed on your machine, and will reproduce the analyses exactly as they were ran for the paper.
 
