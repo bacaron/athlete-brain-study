@@ -11,7 +11,7 @@ import json
 ## paths
 print("setting up variables")
 # set up top directory path and make directory if not exist
-topPath = "/media/brad/APPS/athlete-updated-pipeline-qc"
+topPath = "/insert/your/file/path/here"
 if not os.path.exists(topPath):
 	os.chdir(topPath)
 
