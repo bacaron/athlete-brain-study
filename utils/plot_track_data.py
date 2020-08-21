@@ -83,12 +83,18 @@ def plotTrackMacroData(groups,colors,stat_name,stat,diffusion_measures,dir_out):
 
 		# plot data
 		for g in range(len(groups)):
-			slope, intercept, r_value, p_value, std_err = stats.linregress(stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name],stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm])
-			ax = sns.regplot(x=stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name],y=stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm],color=colors[groups[g]],scatter=True,line_kws={'label':"y={0:.5f}x+{1:.4f}".format(slope,intercept)})
-			ax.legend()
 			if stat_name == 'volume':
-				ax.set_xscale('log')
-				p.set_xlim([1000,1000000])
+				slope, intercept, r_value, p_value, std_err = stats.linregress(np.log10(stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name]),stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm])
+				ax = sns.regplot(x=np.log10(stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name]),y=stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm],color=colors[groups[g]],scatter=True,line_kws={'label':"y={0:.5f}x+{1:.4f}".format(slope,intercept)})
+
+			else:
+				slope, intercept, r_value, p_value, std_err = stats.linregress(stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name],stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm])
+				ax = sns.regplot(x=stat[['structureID',stat_name]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[stat_name],y=stat[['structureID',dm]][stat['subjectID'].str.contains('%s_' %str(g+1))].groupby('structureID',as_index=False).mean()[dm],color=colors[groups[g]],scatter=True,line_kws={'label':"y={0:.5f}x+{1:.4f}".format(slope,intercept)})
+
+			ax.legend()
+			# if stat_name == 'volume':
+			# 	ax.set_xscale('log')
+			# 	p.set_xlim([1000,1000000])
 
 		# save or show plot
 		if dir_out:
@@ -170,47 +176,89 @@ def plotTrackMicrostructureAverage(groups,colors,tracks,stat,diffusion_measures,
 	import seaborn as sns
 	from scipy import stats
 
-	for dm in diffusion_measures:
-		# set up output names
-		img_out=str('track_average_'+dm+'.pdf').replace(' ','_')
-		img_out_png=str('track_average_'+dm+'.png').replace(' ','_')
+	if len(diffusion_measures) > 1:
+		for dm in diffusion_measures:
+			# set up output names
+			img_out=str('track_average_'+dm+'.pdf').replace(' ','_')
+			img_out_png=str('track_average_'+dm+'.png').replace(' ','_')
 
-		# generate figures
-		fig = plt.figure(figsize=(15,15))
-		fig.patch.set_visible(False)
-		p = plt.subplot()
+			# generate figures
+			fig = plt.figure(figsize=(15,15))
+			fig.patch.set_visible(False)
+			p = plt.subplot()
 
-		# set y range
-		p.set_ylim([0,(len(tracks)*len(groups))+3])
+			# set y range
+			p.set_ylim([0,(len(tracks)*len(groups))+3])
 
-		# set spines and ticks
-		p.spines['right'].set_visible(False)
-		p.spines['top'].set_visible(False)
-		# p.spines['left'].set_position(('axes', -0.0))
-		# p.spines['bottom'].set_position(('axes', -0.05))
-		p.yaxis.set_ticks_position('left')
-		p.xaxis.set_ticks_position('bottom')
-		p.set_xlabel(dm)
-		p.set_ylabel("Tracks")
-		p.set_yticks(np.arange((len(groups)-1),(len(tracks)*len(groups)),step=len(groups)))
-		p.set_yticklabels(tracks)
+			# set spines and ticks
+			p.spines['right'].set_visible(False)
+			p.spines['top'].set_visible(False)
+			# p.spines['left'].set_position(('axes', -0.0))
+			# p.spines['bottom'].set_position(('axes', -0.05))
+			p.yaxis.set_ticks_position('left')
+			p.xaxis.set_ticks_position('bottom')
+			p.set_xlabel(dm)
+			p.set_ylabel("Tracks")
+			p.set_yticks(np.arange((len(groups)-1),(len(tracks)*len(groups)),step=len(groups)))
+			p.set_yticklabels(tracks)
 
-		# set title
-		plt.title("%s" %(dm))
+			# set title
+			plt.title("%s" %(dm))
 
-		for l in range(len(tracks)):
-			for g in range(len(groups)):
-				p.errorbar(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(stat[stat['subjectID'].str.contains('%s_' %str(g+1))]['subjectID'].unique()))),barsabove=True,ecolor='black',color=colors[groups[g]],marker='o',ms=10)
+			for l in range(len(tracks)):
+				for g in range(len(groups)):
+					p.errorbar(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(stat[stat['subjectID'].str.contains('%s_' %str(g+1))]['subjectID'].unique()))),barsabove=True,ecolor='black',color=colors[groups[g]],marker='o',ms=10)
 
-		# save or show plot
-		if dir_out:
-			if not os.path.exists(dir_out):
-				os.mkdir(dir_out)
+			# save or show plot
+			if dir_out:
+				if not os.path.exists(dir_out):
+					os.mkdir(dir_out)
 
-			plt.savefig(os.path.join(dir_out, img_out))
-			plt.savefig(os.path.join(dir_out, img_out_png))       
-		else:
-			plt.show()
+				plt.savefig(os.path.join(dir_out, img_out))
+				plt.savefig(os.path.join(dir_out, img_out_png))       
+			else:
+				plt.show()
+	else:
+			# set up output names
+			img_out=str('track_average_'+diffusion_measures+'.pdf').replace(' ','_')
+			img_out_png=str('track_average_'+diffusion_measures+'.png').replace(' ','_')
+
+			# generate figures
+			fig = plt.figure(figsize=(15,15))
+			fig.patch.set_visible(False)
+			p = plt.subplot()
+
+			# set y range
+			p.set_ylim([0,(len(tracks)*len(groups))+3])
+
+			# set spines and ticks
+			p.spines['right'].set_visible(False)
+			p.spines['top'].set_visible(False)
+			# p.spines['left'].set_position(('axes', -0.0))
+			# p.spines['bottom'].set_position(('axes', -0.05))
+			p.yaxis.set_ticks_position('left')
+			p.xaxis.set_ticks_position('bottom')
+			p.set_xlabel(dm)
+			p.set_ylabel("Tracks")
+			p.set_yticks(np.arange((len(groups)-1),(len(tracks)*len(groups)),step=len(groups)))
+			p.set_yticklabels(tracks)
+
+			# set title
+			plt.title("%s" %(dm))
+
+			for l in range(len(tracks)):
+				for g in range(len(groups)):
+					p.errorbar(stat[diffusion_measures][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].mean(),(3*(l+1)-3)+(g+1),xerr=(stat[dm][stat['structureID'] == tracks[l]][stat['subjectID'].str.contains('%s_' %str(g+1))].std() / np.sqrt(len(stat[stat['subjectID'].str.contains('%s_' %str(g+1))]['subjectID'].unique()))),barsabove=True,ecolor='black',color=colors[groups[g]],marker='o',ms=10)
+
+			# save or show plot
+			if dir_out:
+				if not os.path.exists(dir_out):
+					os.mkdir(dir_out)
+
+				plt.savefig(os.path.join(dir_out, img_out))
+				plt.savefig(os.path.join(dir_out, img_out_png))       
+			else:
+				plt.show()
 
 def plotTrackMicrostructureProfiles(groups,colors,tracks,stat,diffusion_measures,dir_out):
 

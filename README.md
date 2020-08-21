@@ -1,6 +1,6 @@
 # Human white matter microstructure predicts elite sports participation
 
-This is the code repository for the paper entitled _Human white matter microstructure predicts elite sports participation_ (link). This repository contains the code responsible for all figures and analyses generated in the paper. Specifically, this repository contains code for downloading the relevant data from brainlife.io, collating the data into relevant .csv files, analyzing the data, performing machine learning, and producing figure plots. The code here was written exclusively in python3.6.
+This is the code repository for the paper entitled _Advanced mapping of the human white matter microstructure better separates elite sports participation_ (link). This repository contains the code responsible for all figures and analyses generated in the paper. Specifically, this repository contains code for downloading the relevant data from brainlife.io, collating the data into relevant .csv files, analyzing the data, performing machine learning, and producing figure plots. The code here has been implemented in python3.6.
 <!--
 #![fig1](./reports/figures/fig1.png)
 
@@ -39,21 +39,19 @@ For a better understanding of how this code was run locally, here is the local d
 	│   ├── parietal_lobes.txt
 	│   ├── somatosensory_lobes.txt
 	│   └── temporal_lobes.txt
-	├── __pycache__
-	│   └── analyzeWmGmData.cpython-36.pyc
+	│   └── association_tracks.txt
+	│   └── projection_tracks.txt
+	│   └── commissural_tracks.txt
+	│   └── mass.csv
 	├── README.md
-	├── todos.txt
 	└── utils
 	    ├── compile_data.py
 	    ├── plot_cortex_data.py
-	    ├── plot_track_data.py
-	    └── __pycache__
-	        ├── compile_data.cpython-36.pyc
-	        ├── computeLobeMicrostructure.cpython-36.pyc
-	        ├── plot_cortex_data.cpython-36.pyc
-	        └── plot_track_data.cpython-36.pyc
+	    └── plot_track_data.py
+	└── data_descriptor
+		├── XX
 	
-	4 directories, 20 files
+	4 directories, 18+XX files
 
 <!--
 <sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>

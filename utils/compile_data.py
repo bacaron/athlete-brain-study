@@ -6,16 +6,20 @@ import pandas as pd
 import json
 
 ### subjects
-def collectSubjectData(topPath,dataPath,groups,subjects,colors):
+def collectSubjectData(topPath,dataPath,configPath,groups,subjects,colors):
 
 	# set up variables
-	data_columns = ['subjectID','class','colors']
+	data_columns = ['subjectID','classID','colors']
 	data =  pd.DataFrame([],columns=data_columns)
+
+	# load age and mass data
+	mass = pd.read_csv(configPath+'/mass.csv')
 
 	# populate structure
 	data['subjectID'] = [ f for g in groups for f in subjects[g] ]
-	data['class'] = [ g for g in groups for f in range(len(subjects[g]))]
+	data['classID'] = [ g for g in groups for f in range(len(subjects[g]))]
 	data['colors'] = [ colors[c] for c in colors for f in subjects[c]]
+	data['mass'] = mass['mass']
 
 	# output data structure for records and any further analyses
 	if not os.path.exists(dataPath):
@@ -53,6 +57,7 @@ def collectSNRData(topPath,dataPath,groups,subjects):
 
 	data['subjectID'] = [ f for g in groups for f in subjects[g] ]
 	data['snr'] = snr
+	data['b0_snr'] = [ data['snr'][f][0] for f in range(len(data['snr'])) ]
 
 	# output data structure for records and any further analyses
 	if not os.path.exists(dataPath):
@@ -61,6 +66,23 @@ def collectSNRData(topPath,dataPath,groups,subjects):
 	data.to_csv(dataPath+'snr.csv',index=False)
 
 	return data
+
+### covariate anovas
+def computeAnovas(dv,between_var,data,adjust_type,effect_size_type,save_dir):
+	import numpy as np
+	import pandas as pd
+	import pingouin as pg
+	from pingouin import pairwise_ttests
+
+	# compute anova
+	aov =  pg.anova(dv=dv,between=between_var,data=data)
+	aov.to_csv(save_dir+'/'+dv+'_anova.csv',index=False)
+	print(aov)
+
+	# compute pairwise ttests
+	ttests = pg.pairwise_ttests(dv=dv,between=between_var,data=data,padjust=adjust_type,effsize=effect_size_type)
+	ttests.to_csv(save_dir+'/'+dv+'_ttests.csv',index=False)
+	print(ttests)
 
 ### white matter
 def collectTrackMacroData(topPath,dataPath,groups,subjects):
@@ -178,16 +200,21 @@ def computeRankOrderEffectSize(groups,subjects,tissue,measures,stat,measures_to_
 	for ma in measures_to_average:
 		if ma == ['ad','fa','md','rd']:
 			model = 'tensor'
-		else:
+		elif ma == ['ndi','isovf','odi']:
 			model = 'noddi'
+		else:
+			model = ma
 
 		tmpdata = pd.DataFrame([])
 		tmpdata['structureID'] = stat['structureID'].unique()
 		for compar in comparison_array:
 			if model == 'tensor':
 				tmpdata[compar[0]+"_"+compar[1]+"_"+model+"_average_effect_size"] = es[compar[0]+"_"+compar[1]][['ad_effect_size','fa_effect_size','md_effect_size','rd_effect_size']].abs().mean(axis=1).tolist()
-			else:
+			elif model == 'noddi':
 				tmpdata[compar[0]+"_"+compar[1]+"_"+model+"_average_effect_size"] = es[compar[0]+"_"+compar[1]][['ndi_effect_size','isovf_effect_size','odi_effect_size']].abs().mean(axis=1).tolist()
+			else:
+				tmpdata[compar[0]+"_"+compar[1]+"_"+model+"_average_effect_size"] = es[compar[0]+"_"+compar[1]][[ma+'_effect_size']].abs().mean(axis=1).tolist()
+
 		tmpdata[model+"_average_effect_size"] =  tmpdata.mean(axis=1).tolist()
 		tmpdata.to_csv(data_dir+model+"_average_"+tissue+"_effect_sizes.csv",index=False)
 		roes[model] = tmpdata.sort_values(by=model+"_average_effect_size")['structureID'].tolist()

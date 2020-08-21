@@ -1,4 +1,2 @@
 #to dos
-1) finish anovas and add final details regarding summary statistics to paper
-2) remove mlc components
-3) update readme to remove mlc components
+1) update readme to remove mlc components

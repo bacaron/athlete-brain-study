@@ -7,32 +7,42 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
-### setting up variables and adding paths
+### setting up variables and adding paths. to use, update topPath, scripts_dir, utils_dir, and data_dir
+## paths
 print("setting up variables")
+# set up top directory path and make directory if not exist
 topPath = "/media/brad/APPS/athlete-updated-pipeline-qc"
-os.chdir(topPath)
-scripts_dir = topPath+'/athlete_brain_study/'
-utils_dir = scripts_dir+'/utils/'
-data_dir = topPath+'/data/'
+if not os.path.exists(topPath):
+	os.chdir(topPath)
+
+# set up scripts file path. This is the path to the downloaded github repository. this will set up the other scripts based off this path
+scripts_dir = topPath+'/athlete_brain_study/' # path to github repo
+utils_dir = scripts_dir+'/utils/' # scripts
+data_dir = topPath+'/data/' # output data directory
+configs_dir = scripts_dir+'/configs/' # configuration files with corresponding track and cortical functional domain groupings
 if not os.path.exists(data_dir):
 	os.mkdir(data_dir)
 img_dir = topPath+'/img/'
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
+
+# appending paths to environment
 sys.path.insert(0,scripts_dir)
 sys.path.insert(1,utils_dir)
 
+## groups, colors, measures, domains, and covariates
 groups = ['football','cross_country','non_athlete']
 colors_array = ['orange','pink','blue']
 diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
 functional_tracks = ['association','projection','commissural']
 lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
-configs_dir = topPath + '/athlete_brain_study/configs/'
+covariates = ['mass','b0_snr','Total Brain Volume','Total Cortical Gray Matter Volume','Total White Matter Volume','Total Cortical Thickness']
 
+## loop through groups and identify subjects and set color schema for each group
 colors = {}
 subjects = {}
 
-# loop through groups and identify subjects and set color schema for each group
+# this is based on group identifiers in the subject numbers: 1_ = football, 2_ = cross country, 3_ = non-athlete
 for g in range(len(groups)):
 	# set subjects array
 	subjects[groups[g]] =  [f.split(topPath+'/')[1] for f in glob.glob(topPath+'/*'+str(g+1)+'_0*')]
@@ -43,28 +53,34 @@ for g in range(len(groups)):
 	colors[groups[g]] = colors_array[g]
 print("setting up variables complete")
 
-### create subjects.csv
+#### create subjects.csv
 print("creating subjects.csv")
 from compile_data import collectSubjectData
-subjects_data = collectSubjectData(topPath,data_dir,groups,subjects,colors)
+subjects_data = collectSubjectData(topPath,data_dir,configs_dir,groups,subjects,colors)
 print("creating subjects.csv complete")
 
-### generate snr plot
+#### generate snr plot
 print("plotting snr data")
 # grab data
 from compile_data import collectSNRData
 snr = collectSNRData(topPath,data_dir,groups,subjects)
+
+# merge subject data to make easier for anova computing
+snr_subjects = pd.merge(subjects_data,snr,on='subjectID')
 
 # plot data
 from plot_track_data import plotSNR
 plotSNR(list(snr['snr']),list(snr['subjectID']),list(subjects_data['colors']),dir_out=img_dir)
 print("plotting snr data complete")
 
-### generate wholebrain plots
+#### generate wholebrain plots
 print("plotting whole brain stats")
 # grab data
 from compile_data import collectWholeBrainStats
 wholebrain = collectWholeBrainStats(topPath,data_dir,groups,subjects)
+
+# merge subject data to make easier for anova computing
+wholebrain_subjects = pd.merge(subjects_data,wholebrain,on='subjectID')
 
 # plot data
 from plot_cortex_data import plotWholeBrainData
@@ -72,14 +88,24 @@ for dc in ['subjectID','Total Brain Volume','Total Cortical Gray Matter Volume',
 	plotWholeBrainData(groups,colors,dc,wholebrain,dir_out=img_dir)
 print("plotting whole brain stats complete")
 
-### group average white matter analyses
+# compute anovas for whole brain, snr, and mass data
+from compile_data import computeAnovas
+for cov in covariates:
+	if cov == 'b0_snr':
+		data_frame = snr_subjects
+	else:
+		data_frame = wholebrain_subjects
+
+	computeAnovas(cov,'classID',data_frame,'bonf','cohen',data_dir)
+
+#### group average white matter analyses
 print("computing group average white matter track analyses")
 ## create data structures
-# macro measures
+# macro measures (length, volume, streamline count)
 from compile_data import collectTrackMacroData
 [track_names,track_macro] = collectTrackMacroData(topPath,data_dir,groups,subjects)
 
-# micro measures
+# micro measures (DTI, NODDI tract profile data)
 from compile_data import collectTrackMicroData
 track_micro =  collectTrackMicroData(topPath,data_dir,groups,subjects,180)
 
@@ -87,7 +113,7 @@ track_micro =  collectTrackMicroData(topPath,data_dir,groups,subjects,180)
 from compile_data import combineTrackMacroMicro
 [track_data,track_mean_data] = combineTrackMacroMicro(data_dir,track_macro[track_macro['structureID'] != 'wbfg'],track_micro)
 
-# functional-specific track measures
+# functional-specific track measures (associative, projection, commissural)
 from compile_data import compileFunctionalData
 functional_track_data = compileFunctionalData(data_dir,track_mean_data,functional_tracks,labelsPath=configs_dir)
 
@@ -96,15 +122,11 @@ from plot_track_data import plotTrackMacroData
 for dc in ['volume','length','count']:
 	plotTrackMacroData(groups,colors,dc,track_mean_data,diff_measures,dir_out=img_dir)
 
-## DTI/NODDI tract profiles
+## DTI/NODDI tract profiles (SD error bars)
 from plot_track_data import plotTrackMicrostructureProfiles
 plotTrackMicrostructureProfiles(groups,colors,track_names,track_data,diff_measures,dir_out=img_dir)
 
-# ## collision vs non-collision scatter
-# from plot_track_data import collisionVNonCollisionTrackScatter
-# collisionVNonCollisionTrackScatter(groups,colors,track_mean_data,diff_measures,dir_out=img_dir)
-
-## DTI/NODDI scatter plots (group averages)
+## DTI/NODDI categorical scatter plots (group averages)
 from compile_data import computeRankOrderEffectSize
 from plot_track_data import plotTrackMicrostructureAverage
 rank_order_tracks = computeRankOrderEffectSize(groups,subjects,'tracks',diff_measures,track_mean_data,[diff_measures[0:4],diff_measures[4:]],data_dir)
@@ -124,7 +146,7 @@ from plot_track_data import plotBootstrappedDifference
 plotBootstrappedDifference(groups,subjects,track_mean_data,diff_measures,colors,10000,0.05,img_dir,data_dir+"/tracks_boostrapped")
 print("computing group average white matter track analyses complete")
 
-### group average cortex mapping analyses
+#### group average cortex mapping analyses
 print("computing group average gray matter parcel analyses")
 ## create data structures
 # cortical measures
@@ -139,7 +161,7 @@ subcortical =  collectSubCorticalParcelData(topPath,data_dir,groups,subjects)
 from compile_data import combineCorticalSubcortical
 [graymatter_names,graymatter] = combineCorticalSubcortical(data_dir,cortical,subcortical)
 
-# lobe-specific measures
+# lobe-specific measures (frontal, temporal, occipital, parietal, insular, limbic, motor, somatosensory)
 from compile_data import compileFunctionalData
 functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=configs_dir)
 
@@ -148,10 +170,6 @@ functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=
 from plot_cortex_data import plotCorticalParcelData
 for dc in ['volume','thickness']:
 	plotCorticalParcelData(groups,colors,dc,cortical,diff_measures,dir_out=img_dir)
-
-## collision vs non-collision scatter
-from plot_cortex_data import collisionVNonCollisionParcelScatter
-collisionVNonCollisionParcelScatter(groups,colors,cortical,subcortical,diff_measures,dir_out=img_dir)
 
 ## lobe averages
 from plot_cortex_data import plotMicrostructureAverage
@@ -176,7 +194,7 @@ plotBootstrappedH0PooledParcelAverageDifference(groups,subjects,subcortical,'sub
 
 ## bootstrapped histograms
 from plot_cortex_data import plotBootstrappedDifference
-plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,10009,0.05,img_dir,data_dir+"/cortex_boostrapped")
+plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/cortex_boostrapped")
 plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
 print("computing group average gray matter parcel analyses complete")
 print("project data has been generated and plotted!")
