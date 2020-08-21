@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script will download all the appropriate summary statistic data files from brainlife.io that are needed for the analyses found in analyzeWmGmData.py
+
 topDir=$1
 projectID="5cb8973c71a8630036207a6a"
 datatypes="snr tractmeasures-profiles tractmeasures-cleaned parc-stats-cortex parc-stats-aparc parc-stats-subcort"
