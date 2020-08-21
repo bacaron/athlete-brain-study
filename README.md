@@ -10,18 +10,10 @@ This is the code repository for the paper entitled _Advanced mapping of the huma
 ### Authors 
 
 - Brad Caron (bacaron@iu.edu)
-- Daniel Bullock
-- Lindsey Kitchell
-- Brent McPherson
-- Derek Kellar
-- Hu Cheng
-- Sharlene Newman
-- Nicholas Port
-- Franco Pestilli
 
 ### Data availability
 
-#Data used in this project can be found at the accompanying [brainlife.io project](LINKTOPROJ).
+#Data used in this project can be found at the accompanying [brainlife.io project](https://brainlife.io/project/5cb8973c71a8630036207a6a).
 
 ### Project Directory Organization
 
