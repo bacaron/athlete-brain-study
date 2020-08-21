@@ -1,2 +1,0 @@
-#to dos
-1) update readme to remove mlc components
