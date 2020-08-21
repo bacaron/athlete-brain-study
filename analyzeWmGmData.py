@@ -197,6 +197,7 @@ from plot_cortex_data import plotBootstrappedDifference
 plotBootstrappedDifference(groups,subjects,cortical,"cortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/cortex_boostrapped")
 plotBootstrappedDifference(groups,subjects,subcortical,"subcortical",diff_measures,colors,10000,0.05,img_dir,data_dir+"/subcortex_boostrapped")
 print("computing group average gray matter parcel analyses complete")
+
 print("project data has been generated and plotted!")
 
 
