@@ -45,7 +45,7 @@ For a better understanding of how this code was run locally, here is the local d
 	|   ├── plot_cortex_data.py
 	|   └── plot_track_data.py
 	└── data_descriptor
-	|   ├── XX
+	|   └── XX
 	
 	4 directories, 18+XX files
 
