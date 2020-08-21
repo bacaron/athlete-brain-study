@@ -1,7 +1,16 @@
 #!/bin/bash
 
-# download data
-. bl_download.sh ./
+# This script will call the two scripts required to perform the analyses. _bl_download.sh_ downloads the needed summary statistics files (.csv) from brainlife.io.
+# _analyzeWmGmData.py_ will perform all the analyses found in Caron et al, Neuroimage: Clinicial (in review).
 
-# analyze group data
+# set top directory. this is the filepath you want the data to be downloaded into, and the analyses to be completed in
+topDir="/path/to/your/directory/"
+
+# download data
+. bl_download.sh $topDir
+
+# analyze group data (if singularity)
 time singularity exec -e docker://bacaron/athlete-brain-container:v1.0 ./analyzeWmGmData.py
+
+# analyze group data (without singularity. this requires all dependencies to be installed)
+# time ./analyzeWmGmData.py
