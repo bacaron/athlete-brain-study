@@ -13,7 +13,7 @@ This is the code repository for the paper entitled _Advanced mapping of the huma
 
 ### Acknowledgements  
 
-This research was supported by NSF OAC-1916518, NSF IIS-1912270, NSF, IIS-1636893, NSF BCS-1734853, NIH NIDCD 5R21DC013974-02, NIH 1R01EB029272-01, the Indiana Spinal Cord and Brain Injury Research Fund, Google Cloud, a Microsoft Research Award, the Indiana University Areas of Emergent Research initiative “Learning: Brains, Machines, Children.” We thank Soichi Hayashi, David Hunt and Steven O’Riley for contributing to the development of brainlife.io, Craig Stewart, Robert Henschel, David Hancock and Jeremy Fischer for support with jetstream-cloud.org (NSF ACI-1445604). We also thank The Indiana University Lawrence D. Rink Center for Sports Medicine and Technology and Center for Elite Athlete Development for contributing funding to athletic scientific research and for the development of a new research facility.
+This research was supported by NSF OAC-1916518, NSF IIS-1912270, NSF, IIS-1636893, NSF BCS-1734853, NIH NIDCD 5R21DC013974-02, NIH 1R01EB029272-01, NIH NIMH 5T32MH103213, the Indiana Spinal Cord and Brain Injury Research Fund, Microsoft Faculty Fellowship, the Indiana University Areas of Emergent Research initiative “Learning: Brains, Machines, Children.” We thank Soichi Hayashi, and David Hunt for contributing to the development of brainlife.io, Craig Stewart, Robert Henschel, David Hancock and Jeremy Fischer for support with jetstream-cloud.org (NSF ACI-1445604). We also thank The Indiana University Lawrence D. Rink Center for Sports Medicine and Technology and Center for Elite Athlete Development for contributing funding to athletic scientific research and for the development of a new research facility.
 
 ### Data availability
 
