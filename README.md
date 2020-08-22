@@ -46,9 +46,10 @@ For a better understanding of how this code was run locally, here is the local d
 	|   ├── plot_cortex_data.py
 	|   └── plot_track_data.py
 	└── data_descriptor
-	|   └── XX
+	|   ├── aggregateMatrices.py
+	|   └── produceAggregateNetworkImages.py
 	
-	4 directories, 19+XX files
+	4 directories, 21 files
 
 <!--
 <sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>
