@@ -1,0 +1,3 @@
+todos:
+1) update analyzeWmGmData.py to be more flexible to user input of diffusion_measures
+2) clean up and generalize network matrice functions
