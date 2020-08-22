@@ -38,8 +38,10 @@ sys.path.insert(1,utils_dir)
 groups = config['groups'].split()
 colors_array = config['colors'].split()
 diff_measures = config['diffusion_measures'].split()
-functional_tracks = config['functional_tracks'].split()
-lobes = config['lobes'].split()
+if 'functional_tracks' in config:
+	functional_tracks = config['functional_tracks'].split()
+if 'lobes' in config:
+	lobes = config['lobes'].split()
 covariates = ['mass','b0_snr','Total Brain Volume','Total Cortical Gray Matter Volume','Total White Matter Volume','Total Cortical Thickness']
 
 ## loop through groups and identify subjects and set color schema for each group
@@ -118,8 +120,9 @@ from compile_data import combineTrackMacroMicro
 [track_data,track_mean_data] = combineTrackMacroMicro(data_dir,track_macro[track_macro['structureID'] != 'wbfg'],track_micro)
 
 # functional-specific track measures (associative, projection, commissural)
-from compile_data import compileFunctionalData
-functional_track_data = compileFunctionalData(data_dir,track_mean_data,functional_tracks,labelsPath=configs_dir)
+if 'functional_tracks' in config:
+	from compile_data import compileFunctionalData
+	functional_track_data = compileFunctionalData(data_dir,track_mean_data,functional_tracks,labelsPath=configs_dir)
 
 ## length, volume, streamline count of tracks
 from plot_track_data import plotTrackMacroData
@@ -166,8 +169,9 @@ from compile_data import combineCorticalSubcortical
 [graymatter_names,graymatter] = combineCorticalSubcortical(data_dir,cortical,subcortical)
 
 # lobe-specific measures (frontal, temporal, occipital, parietal, insular, limbic, motor, somatosensory)
-from compile_data import compileFunctionalData
-functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=configs_dir)
+if 'lobes' in config:
+	from compile_data import compileFunctionalData
+	functional_lobe_data = compileFunctionalData(data_dir,cortical,lobes,labelsPath=configs_dir)
 
 ## volume, cortical thickness analyses
 # cortical thickness/volume by diffusion measure per cortical parcel
@@ -175,11 +179,18 @@ from plot_cortex_data import plotCorticalParcelData
 for dc in ['volume','thickness']:
 	plotCorticalParcelData(groups,colors,dc,cortical,diff_measures,dir_out=img_dir)
 
-## lobe averages
+## lobe or parcel averages
 from plot_cortex_data import plotMicrostructureAverage
-rank_order_lobes = computeRankOrderEffectSize(groups,subjects,'lobes',diff_measures,lobes_data,[diff_measures[0:4],diff_measures[4:]],data_dir)
-plotMicrostructureAverage(groups,colors,'lobes',rank_order_lobes['tensor'],lobe_data,diff_measures[0:4],dir_out=img_dir)
-plotMicrostructureAverage(groups,colors,'lobes',rank_order_lobes['noddi'],lobe_data,diff_measures[4:],dir_out=img_dir)
+if 'lobes' in config:
+	data = functional_lobes_data
+	label = 'lobes'
+else:
+	data = cortical
+	label = 'cortical'
+
+rank_order_cortex = computeRankOrderEffectSize(groups,subjects,label,diff_measures,data,[diff_measures[0:4],diff_measures[4:]],data_dir)
+plotMicrostructureAverage(groups,colors,label,rank_order_cortex['tensor'],data,diff_measures[0:4],dir_out=img_dir)
+plotMicrostructureAverage(groups,colors,label,rank_order_cortex['noddi'],data,diff_measures[4:],dir_out=img_dir)
 
 ## subcortical averages
 rank_order_subcortex = computeRankOrderEffectSize(groups,subjects,'subcortex',diff_measures,subcortical,[diff_measures[0:4],diff_measures[4:]],data_dir)
