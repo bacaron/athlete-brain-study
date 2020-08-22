@@ -28,28 +28,33 @@ For a better understanding of how this code was run locally, here is the local d
 	├── bl_download.sh
 	├── config.json
 	├── configs
+	│   ├── association_tracks.txt
+	│   ├── commissural_tracks.txt
 	│   ├── frontal_lobes.txt
 	│   ├── insular_lobes.txt
 	│   ├── limbic_lobes.txt
+	│   ├── mass.csv
 	│   ├── motor_lobes.txt
 	│   ├── occipital_lobes.txt
 	│   ├── parietal_lobes.txt
+	│   ├── projection_tracks.txt
 	│   ├── somatosensory_lobes.txt
 	│   └── temporal_lobes.txt
-	│   └── association_tracks.txt
-	│   └── projection_tracks.txt
-	│   └── commissural_tracks.txt
-	│   └── mass.csv
+	├── data_descriptor
+	│   ├── aggregateMatrices.py
+	│   └── produceAggregateNetworkImages.m
+	├── Dockerfile
+	├── LICENSE
+	├── main
 	├── README.md
+	├── requirements.txt
+	├── todos.txt
 	└── utils
-	|   ├── compile_data.py
-	|   ├── plot_cortex_data.py
-	|   └── plot_track_data.py
-	└── data_descriptor
-	|   ├── aggregateMatrices.py
-	|   └── produceAggregateNetworkImages.py
-	
-	4 directories, 21 files
+	    ├── compile_data.py
+	    ├── plot_cortex_data.py
+	    └── plot_track_data.py
+
+	3 directories, 26 files
 
 <!--
 <sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>
