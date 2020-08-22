@@ -1,0 +1,9 @@
+{
+	"topPath":	"/path/to/directory/",
+	"scriptsPath":	"/path/to/scripts/athlete-brain-study/",
+	"groups":	"football cross_country non_athlete",
+	"colors":	"orange pink blue",
+	"diffusion_measures":	"ad fa md rd ndi isovf odi",
+	"functional_tracks":	"association projection commissural",
+	"lobes":	"frontal temporal occipital parietal insular limbic motor somatosensory"
+}

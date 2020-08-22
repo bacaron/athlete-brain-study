@@ -26,6 +26,7 @@ For a better understanding of how this code was run locally, here is the local d
 	.
 	├── analyzeWmGmData.py
 	├── bl_download.sh
+	├── config.json
 	├── configs
 	│   ├── frontal_lobes.txt
 	│   ├── insular_lobes.txt
@@ -47,7 +48,7 @@ For a better understanding of how this code was run locally, here is the local d
 	└── data_descriptor
 	|   └── XX
 	
-	4 directories, 18+XX files
+	4 directories, 19+XX files
 
 <!--
 <sub> This material is based upon work supported by the National Science Foundation Graduate Research Fellowship under Grant No. 1342962. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation. </sub>
@@ -76,7 +77,11 @@ A docker container exists containing all of the dependencies necessary for runni
 
 ### To run locally
 
+Before any of the scripts provided are ran, the user must set up two specific paths in the config.json file. 'topPath' is the filepath to the directory in where you want the data to be downloaded and analyses to be ran. This directory will be created by the bl_download.sh script if it does not already exist. 'scriptsPath' is the path to this repository on your local machine. All of the other variables in the config.json should be left as is.
+
 To run locally, you'll first need to download the appropriate data using the bl_download.sh shell script. Once the data is downloaded, you can run via python3 the analyzeWmGmData.py script to generate the summary data structures and figures. This route requires all of the dependencies to be installed on your machine.
 
 If you have singularity installed, you can run the entire analysis pipeline by running via shell/bash the main script. This will run the scripts for downloading and analyzing the data via singularity using the docker container described above. This route does not require all of the dependencies to be installed on your machine, and will reproduce the analyses exactly as they were ran for the paper.
+
+
 

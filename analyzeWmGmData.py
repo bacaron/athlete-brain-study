@@ -8,34 +8,38 @@ import pandas as pd
 import json
 
 ### setting up variables and adding paths. to use, update topPath, scripts_dir, utils_dir, and data_dir
+## open config.json with specific paths and variables
+with open('config.json') as config_f:
+	config =  json.load(config_f)
+
 ## paths
 print("setting up variables")
-# set up top directory path and make directory if not exist
-topPath = "/insert/your/file/path/here"
+# grab paths 
+topPath = config['topPath']
 if not os.path.exists(topPath):
 	os.chdir(topPath)
-
-# set up scripts file path. This is the path to the downloaded github repository. this will set up the other scripts based off this path
-scripts_dir = topPath+'/athlete_brain_study/' # path to github repo
-utils_dir = scripts_dir+'/utils/' # scripts
 data_dir = topPath+'/data/' # output data directory
-configs_dir = scripts_dir+'/configs/' # configuration files with corresponding track and cortical functional domain groupings
 if not os.path.exists(data_dir):
 	os.mkdir(data_dir)
 img_dir = topPath+'/img/'
 if not os.path.exists(img_dir):
 	os.mkdir(img_dir)
 
+# set up scripts file path. This is the path to the downloaded github repository. this will set up the other scripts based off this path
+scripts_dir = config['scriptsPath'] # path to github repo
+utils_dir = scripts_dir+'/utils/' # scripts
+configs_dir = scripts_dir+'/configs/' # configuration files with corresponding track and cortical functional domain groupings
+
 # appending paths to environment
 sys.path.insert(0,scripts_dir)
 sys.path.insert(1,utils_dir)
 
 ## groups, colors, measures, domains, and covariates
-groups = ['football','cross_country','non_athlete']
-colors_array = ['orange','pink','blue']
-diff_measures = ['ad','fa','md','rd','ndi','isovf','odi']
-functional_tracks = ['association','projection','commissural']
-lobes = ['frontal','temporal','occipital','parietal','insular','limbic','motor','somatosensory']
+groups = config['groups'].split()
+colors_array = config['colors'].split()
+diff_measures = config['diffusion_measures'].split()
+functional_tracks = config['functional_tracks'].split()
+lobes = config['lobes'].split()
 covariates = ['mass','b0_snr','Total Brain Volume','Total Cortical Gray Matter Volume','Total White Matter Volume','Total Cortical Thickness']
 
 ## loop through groups and identify subjects and set color schema for each group

@@ -3,8 +3,8 @@
 # This script will call the two scripts required to perform the analyses. _bl_download.sh_ downloads the needed summary statistics files (.csv) from brainlife.io.
 # _analyzeWmGmData.py_ will perform all the analyses found in Caron et al, Neuroimage: Clinicial (in review).
 
-# set top directory. this is the filepath you want the data to be downloaded into, and the analyses to be completed in
-topDir="/path/to/your/directory/"
+# set top directory. this is the filepath you want the data to be downloaded into, and the analyses to be completed in. This path should be added to the config.json file in the 'topPath' variable. This directory does not have to be created before running and will be created in bl_download.sh.
+topDir=`jq -r '.topPath' config.json`
 
 # download data
 . bl_download.sh $topDir
